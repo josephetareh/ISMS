@@ -1,5 +1,5 @@
+from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
-from django.forms import EmailInput
 
 from user_configuration.models import CustomUser
 
@@ -11,10 +11,15 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email', )
+        fields = ('email',)
 
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ('email', )
+        fields = ('email',)
+
+
+class UserLoginForm(forms.Form):
+    email_or_pass = forms.CharField(label="Email or Username", help_text="Input Your Email or Username")
+    password = forms.CharField(widget=forms.PasswordInput())

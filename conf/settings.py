@@ -32,7 +32,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django_htmx',
     'user_configuration',
+    'staff_schedule',
 ]
 
 MIDDLEWARE = [
@@ -43,6 +45,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django_htmx.middleware.HtmxMiddleware',
 ]
 
 ROOT_URLCONF = 'conf.urls'
@@ -50,7 +53,11 @@ ROOT_URLCONF = 'conf.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            os.path.join(BASE_DIR, 'user_configuration/templates/'),
+            os.path.join(BASE_DIR, 'staff_schedule/templates/'),
+            os.path.join(BASE_DIR, 'templates/'),
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -106,6 +113,10 @@ USE_I18N = True
 
 USE_TZ = True
 
+APPEND_SLASH = True
+
+LOGIN_URL = "user_configuration:staff-login"
+
 
 AUTH_USER_MODEL = "user_configuration.CustomUser"
 
@@ -113,6 +124,13 @@ AUTH_USER_MODEL = "user_configuration.CustomUser"
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
 STATIC_URL = 'static/'
+
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'staff_schedule/static/'),
+    os.path.join(BASE_DIR, 'user_configuration/static/'),
+]
+
+STATIC_ROOT = "static"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field

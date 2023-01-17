@@ -1,3 +1,5 @@
 /venv/
 /conf/.env
 /.idea/
+/user_configuration/__pycache__/
+/staff_schedule/__pycache__/

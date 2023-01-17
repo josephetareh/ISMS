@@ -22,3 +22,9 @@ class UserManagersTests(TestCase):
             user.objects.create_user(username="nm@user.com", password="foo")
         with self.assertRaises(ValueError):
             user.objects.create_user(username="nm", email="", password="foo")
+
+
+class TestLogin(TestCase):
+
+    def test_staff_login(self):
+        pass
