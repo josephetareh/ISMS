@@ -12,7 +12,7 @@ def staff_login(request):
     staff login view. this view authenticates users using either their email or username. users that have already been
     authenticated are automatically redirected to their dashboard.
     :param request: django request object
-    :return: HTML page to redreict to
+    :return: HTML page to redirect to
     """
     if request.user.is_authenticated:
         return redirect('user_configuration:dashboard')

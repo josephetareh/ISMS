@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from staff_schedule.models import Event, EventType, Location, EventPersonnel
+from staff_schedule.models import Event, EventType, Location, EventPersonnel, Weekday
 
 
 @admin.register(Location)
@@ -11,6 +11,11 @@ class LocationAdmin(admin.ModelAdmin):
 @admin.register(EventType)
 class EventTypeAdmin(admin.ModelAdmin):
     list_display = ('type',)
+
+
+# @admin.register(Weekday)
+# class WeekdayAdmin(admin.ModelAdmin):
+#     list_display = ("day",)
 
 
 class EventPersonnelInline(admin.TabularInline):

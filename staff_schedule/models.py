@@ -29,6 +29,22 @@ class EventType(models.Model):
         return self.get_type_display()
 
 
+class Weekday(models.Model):
+    WEEKDAYS = [
+        ("0", "Monday"),
+        ("1", "Tuesday"),
+        ("2", "Wednesday"),
+        ("3", "Thursday"),
+        ("4", "Friday"),
+        ("5", "Saturday"),
+        ("6", "Sunday")
+    ]
+    day = models.CharField(max_length=1, choices=WEEKDAYS)
+
+    def __str__(self):
+        return self.get_day_display()
+
+
 class Event(models.Model):
     event_name = models.CharField(max_length=300, blank=False)
     description = models.TextField(max_length=1000, blank=True, null=True)
@@ -38,6 +54,7 @@ class Event(models.Model):
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     staff_working = models.ManyToManyField(settings.AUTH_USER_MODEL, through="EventPersonnel",
                                            through_fields=('event', 'staff_on_event'))
+    event_day = models.ForeignKey(Weekday, null=False, on_delete=models.CASCADE)
 
     # covering = models.BooleanField(default=False)
 

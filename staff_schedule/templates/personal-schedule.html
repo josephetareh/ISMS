@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+{% load staffschedule_extras %}
+
+{% block content %}
+    <h1>Your Schedule</h1>
+
+    <div id="date-control" hx-swap-oob="true">
+        {% if activity is None %}
+            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:-1 %}" hx-push-url="true"
+                    hx-vals='{"date-shift": "previous"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
+            >{{ date_shifter|get_date_as_string:-1 }}</button>
+            <div>{{ date_viewing }}</div>
+            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:1 %}" hx-push-url="true"
+                hx-vals='{"date-shift": "next"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
+            >{{ date_shifter|get_value_from_index:1|get_value_from_index:0 }}</button>
+
+        {% else %}
+
+            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:-1 activity %}" hx-push-url="true"
+                    hx-vals='{"date-shift": "previous"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
+            >{{ date_shifter|get_date_as_string:-1 }}</button>
+            <div>{{ date_viewing }}</div>
+            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:1 activity %}" hx-push-url="true"
+                hx-vals='{"date-shift": "next"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
+            >{{ date_shifter|get_value_from_index:1|get_value_from_index:0 }}</button>
+
+        {% endif %}
+
+    </div>
+
+
+
+
+
+    <div id="date-information">
+
+        <button hx-post="{% url 'schedule:personal-schedule' date_viewing %}"
+            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
+        All Events
+        </button>
+        <button hx-post="{% url 'schedule:personal-schedule' date_viewing "Classes" %}"
+            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
+        Classes
+        </button>
+        <button hx-post="{% url 'schedule:personal-schedule' date_viewing "Meetings" %}"
+            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
+        Meetings
+        </button>
+
+        {% for event in events %}
+            {{ event.event_name }}
+            {{ event.type }}
+            {{ event.date }}
+            <br>
+        {% endfor %}
+    </div>
+
+{% endblock %}

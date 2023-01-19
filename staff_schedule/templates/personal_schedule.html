@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>Your Schedule}</h1>
+    <button hx-post="{% url 'schedule:personal-schedule' current_date_viewing.0 "all" %}" hx-target="#available-events"
+         hx-select="#available-events" hx-swap="outerHTML" hx-vals='{"event-filter":"all"}' hx-push-url="true"
+        hx-swap-oob="true"
+    >All Events</button>
+{#    <button hx-post="{% url 'schedule:personal-schedule' current_date_viewing.0 "CS" %}" hx-target="#available-events"#}
+{#        hx-select="#available-events" hx-swap="outerHTML" hx-vals='{"event-filter":"CLS"}' hx-push-url="true"#}
+{#        hx-swap-oob="true"#}
+{#    >Classes</button>#}
+{#    <button hx-post="{% url 'schedule:personal-schedule' current_date_viewing.0 "MTS" %}" hx-target="#available-events"#}
+{#     hx-select="#available-events" hx-swap="outerHTML" hx-vals='{"event-filter":"MTS"}' hx-push-url="true"#}
+{#     hx-swap-oob="true"#}
+{#    >Meetings</button>#}
+{#    <button hx-post="{% url 'schedule:personal-schedule' current_date_viewing.0 "PT" %}" hx-target="#available-events"#}
+{#            hx-select="#available-events" hx-swap="outerHTML" hx-vals='{"event-filter":"PT"}' hx-push-url="true"#}
+{#            hx-swap-oob="true"#}
+{#    >Personal Training</button>#}
+    <br>
+    <br>
+
+    <div id="session-details" hx-boost="true" hx-target="#session-details" hx-select="#session-details" hx-swap="outerHTML" hx-push-url="true">
+
+        <div id="date-changer">
+            <a href="{% url 'schedule:personal-schedule' current_date_viewing.2 event_type%}">{{ current_date_viewing.2}}</a>
+            <div>{{ current_date_viewing.1 }}</div>
+            <a href="{% url 'schedule:personal-schedule' current_date_viewing.3 event_type %}">{{ current_date_viewing.3 }}</a>
+        </div>
+
+        <br>
+        <br>
+
+        <div id="available-events">
+            {% for event  in user_schedule %}
+                {{ event }}
+                {{ event.start_time }}
+                {{ event.end_time }}
+                <br>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

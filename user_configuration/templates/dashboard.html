@@ -2,4 +2,8 @@
 
 {% block content %}
     <h1>Hello, {{ user.username }}</h1>
+    <div id="test" hx-boost="true">
+        <a href="{% url 'schedule:personal-schedule' %}">Personal Schedule</a>
+        <a href="{% url 'user_configuration:logout' %}">Logout</a>
+    </div>
 {% endblock %}

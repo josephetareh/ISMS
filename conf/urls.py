@@ -5,7 +5,9 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path("schedule/", include('staff_schedule.urls', namespace='schedule')),
     path('', include('user_configuration.urls', namespace='user_configuration')),
+    path('__debug__/', include('debug_toolbar.urls')),
 ]
 
 if settings.DEBUG:
