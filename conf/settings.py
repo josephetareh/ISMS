@@ -32,8 +32,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
     'debug_toolbar',
     'django_htmx',
+    'django_celery_beat',
     'user_configuration',
     'staff_schedule',
 ]
@@ -48,6 +50,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "debug_toolbar.middleware.DebugToolbarMiddleware",
     'django_htmx.middleware.HtmxMiddleware',
+    'user_configuration.middleware.TimezoneMiddleware',
 ]
 
 ROOT_URLCONF = 'conf.urls'
@@ -123,8 +126,12 @@ APPEND_SLASH = True
 
 LOGIN_URL = "user_configuration:staff-login"
 
-
 AUTH_USER_MODEL = "user_configuration.CustomUser"
+
+# CELERY DETAILS
+CELERY_BROKER_URL = 'amqp://localhost'
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/

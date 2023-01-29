@@ -23,6 +23,8 @@ def staff_login(request):
             form_data = form.cleaned_data
             user = authenticate(username=form_data['email_or_pass'], password=form_data['password'])
             if user is not None:
+                # set the timezone based on the middleware described in user_configuration/middleware.py
+                request.session['django_timezone'] = 'Africa/Lagos'
                 login(request, user)
                 return redirect('user_configuration:dashboard')
             else:

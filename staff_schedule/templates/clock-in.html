@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load staffschedule_extras %}
+
+{% block content %}
+    <div id="clock"></div>
+
+    <div id="clock-in-message"></div>
+    <br>
+
+    <ul class="messages" id="clock-in-request-messages" hx-swap-oob="true">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+
+    <div>Clock in Time: {{ active_clock_in.shift_starts }}</div>
+    <br>
+    <div>Opening time: {{ time_to_open }}</div>
+
+    <br>
+    {{ active_clock_in.active }}
+    <br>
+    {{ active_clock_in.get_status_display }}
+
+    <button disabled
+            id="clock-in-status"
+            data-button-status= "{{ clock_in_button_info.1 }}"
+            type="submit"
+            hx-post="{% url 'schedule:clock-in' %}"
+            hx-target="#clock-in-details"
+            hx-select="#clock-in-details"
+            hx-swap="outerHTML"
+            hx-vals='{"shift-activated": "True"}'
+    >Clock In {{ clock_in_button_info.1 }}</button>
+
+    <div id="clock-in-details">
+        clocked in: {{ active_clock_in.time_clocked_in }}
+        <br>
+        deduction: {{ active_clock_in.deduction }}
+    </div>
+
+    <script src="{% static 'js/internal_clock/currenttime.js' %}" defer></script>
+    <script src="{% static 'js/internal_clock/getCurrentClockInLocation.js' %}" defer></script>
+{% endblock %}

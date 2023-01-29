@@ -17,7 +17,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ('email',)
+        fields = ('email', 'basic_hourly_wage')
 
 
 class UserLoginForm(forms.Form):
