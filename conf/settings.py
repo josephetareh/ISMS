@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'user_configuration',
     'staff_schedule',
+    'tasks',
 ]
 
 MIDDLEWARE = [

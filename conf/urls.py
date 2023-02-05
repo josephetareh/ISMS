@@ -7,6 +7,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("schedule/", include('staff_schedule.urls', namespace='schedule')),
     path('', include('user_configuration.urls', namespace='user_configuration')),
+    path("my-tasks/", include('tasks.urls', namespace='my-tasks')),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 

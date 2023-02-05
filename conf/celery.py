@@ -1,6 +1,10 @@
 import os
 from celery import Celery
 
+# commands:
+# celery -A conf worker -l info
+# celery -A conf beat -l info -S django
+
 # ensure that settings is available through the DJANGO_SETTINGS_MODULE key
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "conf.settings")
 app = Celery("conf")

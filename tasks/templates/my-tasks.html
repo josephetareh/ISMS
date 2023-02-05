@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>User Tasks</h1>
+{#    {% for task in user_tasks %}#}
+{#        <div>{{ task }}</div>#}
+{#        <div>{{ task.get_status_display }}</div>#}
+{#        <div>{{ task.start_date }}</div>#}
+{#        <div>{{ task.deadline_date }}</div>#}
+{#        <br>#}
+{#    {% endfor %}#}
+
+    {% for task, subtask in user_tasks.items %}
+        <div>{{ task }}</div>
+        <div>{{ task.get_status_display }}</div>
+        <div>{{ task.start_date }}</div>
+        <div>{{ task.deadline_date }}</div>
+        <br>
+        {% for s in subtask %}
+            <div>{{ s.subtask_name }}</div>
+            {% if s.dependencies.all %}
+                <div>{{ s.dependencies.all }}</div>
+                <div>{{ s.from_subtask }}</div>
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+{% endblock %}

@@ -132,7 +132,6 @@ def clock_in(request):
             else:
                 messages.error(request, "you are not within the required distance to activate your clock in. "
                                         "please move closer to the gym before attempting to clock in")
-                print("erroring")
         next_clock_in.save()
 
         context = {

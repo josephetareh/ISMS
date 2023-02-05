@@ -29,6 +29,7 @@ class EventType(models.Model):
         ("MT", "Meeting"),
         ("PT", "Personal Training")
     ]
+    # todo: before migration — probably want to change this name to prevent python clash errors
     type = models.CharField(max_length=2, choices=EVENT_TYPES)
 
     def __str__(self):
@@ -55,6 +56,7 @@ class Event(models.Model):
     event_name = models.CharField(max_length=300, blank=False)
     description = models.TextField(max_length=1000, blank=True, null=True)
     type = models.ForeignKey(EventType, on_delete=models.CASCADE)
+    # todo: before next migration make these DateTimeFields
     start_time = models.TimeField()
     end_time = models.TimeField()
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
@@ -88,7 +90,7 @@ class Shift(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     staff_on_shift = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # todo — remove this
+    # todo — on next migration: remove this
     shift_weekday = models.ForeignKey(Weekday, on_delete=models.CASCADE, blank=False, null=False)
 
     # todo shift covering functionality here test for normalization
@@ -151,13 +153,17 @@ class ClockIn(models.Model):
             # if the current time is not greater than the shift, but it is within 40 minutes,
             # then also activate the shift. this will be necessary in cases where a new shift is created
             # for new staff and celery does not ever get a chance to run.
-            if divmod(time_to_shift_beginning, 3600)[0] == 0:
-                if divmod(time_to_shift_beginning, 60)[0] <= 40:
+            if abs(divmod(time_to_shift_beginning, 3600)[0]) == 1:
+                # 1 is used here because when the current time is less than the shift starting time,
+                # time_to_shift_beginning will return a negative value. with divmod, when a negative value is
+                # divmoded with a larger value, divmod will return -1.
+
+                # so where we are 39 minutes before the clock in time [2340] seconds, the comparison will carry out
+                # divmod (-2340, 3600), which should return -1
+                if abs(divmod(time_to_shift_beginning, 60)[0]) <= 40:
                     self.active = True
             else:
                 self.active = False
-
-
 
         # todo: post testing, only run this on the first instance of the clock in creation
         time_difference = self.shift_ends - self.shift_starts
@@ -180,8 +186,7 @@ class ClockIn(models.Model):
 
         if self.pk is None:
             """
-            this is functionality to create a new periodic task that will run when a clock moves from being closed
-            to opened
+            this is functionality to create a new periodic task that will run the first time a clock in is created
             """
             # save is called here because the primary key is needed to be able to create a unique Periodic Task
             super().save(*args, **kwargs)
@@ -195,21 +200,25 @@ class ClockIn(models.Model):
                 args=json.dumps([f'{self.id}'])
             )
         else:
-            # ensure that the Periodic Task changes if the clock in data changes
             try:
+                """
+                try-except block to handle scenarios where a PeriodicTask may have been deleted
+                """
                 current_corresponding_periodic_task = PeriodicTask.objects.get(
                     name=f"clock id = {self.id}",
                 )
             except PeriodicTask.DoesNotExist:
                 current_corresponding_periodic_task = None
 
-            if current_corresponding_periodic_task is not None:
-                # delete the current corresponding periodic task to allow set a new one if one already exists
+            if current_corresponding_periodic_task is not None \
+                    and current_corresponding_periodic_task.crontab != schedule:
+                # if a PeriodicTask currently exists, but there is a different schedule, then we have to delete
+                # the matching PeriodicTask because it will run at the wrong time otherwise.
                 current_corresponding_periodic_task.delete()
+                current_corresponding_periodic_task = None
 
-            if current_corresponding_periodic_task is None or current_corresponding_periodic_task.crontab != schedule:
-                # if the crontab is different, delete the old periodic task associated to this clock in and
-                # create a new one as the time data has been changed for the clock in
+            if current_corresponding_periodic_task is None:
+                # once the PeriodicTask has been deleted, or if it was never found:
                 PeriodicTask.objects.create(
                     name=f'clock id = {self.id}',
                     crontab=schedule,
@@ -225,8 +234,8 @@ class ClockIn(models.Model):
                 # when a staff begins a shift, a new clock in must be created for the
                 # corresponding  week after. in the future, we will need to ensure that
                 # this checks for covering status
-                new_start_date, new_end_date = self.shift_starts + timedelta(days=7), \
-                                               self.shift_ends + timedelta(days=7)
+                new_start_date, new_end_date =\
+                    self.shift_starts + timedelta(days=7),self.shift_ends + timedelta(days=7)
                 new_clockin, created = ClockIn.objects.get_or_create(shift=self.shift, status="CLSD",
                                                                      shift_starts=new_start_date,
                                                                      shift_ends=new_end_date)
