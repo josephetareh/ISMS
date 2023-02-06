@@ -32,7 +32,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'django.contrib.sites',
     'debug_toolbar',
     'django_htmx',
     'django_celery_beat',
@@ -130,7 +129,7 @@ LOGIN_URL = "user_configuration:staff-login"
 AUTH_USER_MODEL = "user_configuration.CustomUser"
 
 # CELERY DETAILS
-CELERY_BROKER_URL = 'amqp://localhost'
+CELERY_BROKER_URL = env('CELERY_BROKER_URL')
 
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 

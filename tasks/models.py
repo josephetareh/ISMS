@@ -27,7 +27,7 @@ class Task(models.Model):
     priority = models.CharField(blank=True, null=True, choices=PRIORITY_CHOICES, max_length=1)
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.SET_NULL,
                                    related_name="task_creator")
-    working_on = models.ManyToManyField(settings.AUTH_USER_MODEL, null=True, blank=True, related_name="working_on")
+    working_on = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="working_on")
     last_modified = models.DateTimeField(auto_now=True)
     description = models.TextField()
 
