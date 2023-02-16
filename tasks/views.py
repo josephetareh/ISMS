@@ -10,30 +10,29 @@ def my_tasks(request):
 
     # this will be the conditional if the subtasks are not being shown —
     # by default, they will not be shown on the main page:
-
-    user_tasks = Task.objects.filter(working_on=request.user)
+    # user_subtasks = SubTask.objects.filter(assigned_to=request.user).select_related('task')
+    user_tasks = Task.objects.filter(working_on=request.user).prefetch_related('subtask_parent',
+                                                                               'subtask_parent__dependencies')
     task_dictionary = {}
-    related_subtasks = SubTask.objects.filter(task__in=user_tasks, assigned_to=request.user).\
-        prefetch_related('dependencies', "task")
-    for count, item in enumerate(related_subtasks):
-        print(item.task.task_name)
-        print(item.subtask_name)
-        dependencies = SubTaskDependency.objects.filter(from_subtask=item)\
-            .select_related('to_subtask', 'from_subtask').values_list('to_subtask', 'dependency_status')
-        task_dictionary[count] = [item.task.task_name, item.subtask_name, dependencies]
+    for task in user_tasks:
+        subtasks = task.subtask_parent.all()
+        task_dictionary[task] = subtasks
+    context = {
+        "task_items": task_dictionary
+    }
 
-    print(task_dictionary)
-
-    # for task in user_tasks:
-    #     print(task.subtask_parent.all())
-    #     subtasks_dependencies = SubTask.objects.filter(task__in=task)prefetch_related('dependencies')
-
-    # context = {
-    #     "user_tasks": task_dictionary,
-    # }
-    return render(request, 'my-tasks.html')
+    return render(request, 'my-tasks.html', context)
 
 
-def task_detail(request):
-    # get task detail
+def task_detail(request, slug, task_id):
+    current_task = Task.objects.get(id=task_id, slug=slug)
+    subtasks = SubTask.objects.filter(task=current_task, assigned_to=request.user)
+    context = {
+        "current_task": current_task,
+        "subtasks": subtasks
+    }
+    return render(request, "task-detail.html", context)
+
+
+def subtask_detail(request, slug, subtask_id):
     pass

@@ -1,0 +1,136 @@
+
+
+.thin{
+  font-weight: $outfit-thin;
+}
+
+.extra-light{
+  font-weight: $outfit-extra-light;
+}
+
+.light{
+  font-weight: $outfit-light;
+}
+
+.regular{
+  font-weight: $outfit-regular;
+}
+
+.medium{
+  font-weight: $outfit-medium;
+}
+
+.semi-bold{
+  font-weight: $outfit-semi-bold;
+}
+
+.bold{
+  font-weight: $outfit-bold;
+}
+
+.extra-bold{
+  font-weight: $outfit-extra-bold;
+}
+
+.black{
+  font-weight: $outfit-black;
+}
+
+.alt-fnt{
+  font-family: $alternative-font;
+}
+
+.alt-fnt-medium{
+  font-weight: $paralucent-medium;
+}
+
+.root-size{
+  font-size: 1rem;
+}
+
+.double-root{
+  font-size: 2rem;
+}
+
+.half-root{
+  font-size: 0.5rem;
+}
+
+.zero-point-seven-five-root{
+  font-size: 0.75rem;
+}
+
+.zero-point-eight-seven-five-root{
+  font-size: 0.875rem;
+}
+
+.one-point-one-two-five-root{
+  font-size: 1.125rem;
+}
+
+.one-point-two-five-root{
+  font-size: 1.25rem;
+}
+
+.one-point-five-root{
+  font-size: 1.5rem;
+}
+
+.one-point-seven-five-root{
+  font-size: 1.75rem;
+}
+
+.two-point-five-root{
+  font-size: 2.5rem;
+}
+
+.triple-root{
+  font-size: 3rem;
+}
+
+.quadruple-root{
+  font-size: 4rem;
+}
+
+.subtext-shade{
+  color: #646569;
+}
+
+.success-text{
+  color: $success-text-colour;
+}
+
+.failure-text{
+  color: $failure-text-colour;
+}
+
+.alt-text{
+  color: $default-black;
+}
+
+.alternative-blue{
+  color: $alternative-blue-color;
+}
+
+.pending-text{
+  color: $pending-text-colour;
+}
+
+.pointer{
+  cursor: pointer;
+}
+
+.greened-insights{
+  background-color: #1FC5AB;
+  border-radius: 1.25rem;
+}
+
+.blued-insights{
+  background-color: #328AE1;
+  border-radius: 1.25rem;
+}
+
+.purpled-insights{
+  background-color: #BE3160;
+    border-radius: 1.25rem;
+}

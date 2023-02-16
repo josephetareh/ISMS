@@ -1,0 +1,95 @@
+.btn-clock-in{
+  font-weight: $outfit-medium;
+  font-size: 0.875rem;
+  border-radius: .3125rem;
+  background-color: #21D59B;
+  color: $default-black;
+  border: transparent;
+
+  &:link,
+  &:visited,
+  &:hover,
+  &:active
+  {
+  background-color: #21D59B;
+  border: transparent;
+  color: $default-black;
+  }
+
+  &:disabled{
+    background-color: hsla(161, 73%, 48% , 0.3);
+    border: transparent;
+    color: $default-black;
+  }
+}
+
+.btn-core-ghost{
+  background-color: transparent;
+  border: $core-blue-colour solid 0.0625rem;
+  border-radius: .3125rem;
+  color: $core-blue-colour;
+
+  &:hover{
+    background-color: $core-blue-colour;
+    color: $default-white;
+    border: transparent;
+  }
+
+  &:disabled{
+    opacity: 0.3;
+    &:hover{
+      background-color: transparent;
+      border: $core-blue-colour solid 0.0625rem;
+      border-radius: .3125rem;
+      color: $core-blue-colour;
+    }
+  }
+}
+
+
+.btn-alt-ghost{
+  background-color: transparent;
+  border: $alt-green-component-colour solid 0.0625rem;
+  border-radius: .3125rem;
+  color: $alt-green-component-colour;
+
+  &:hover{
+    background-color: $alt-green-component-colour;
+    border: transparent;
+    color: $default-black;
+  }
+}
+
+
+.btn-clock-in-late{
+  background-color: $failure-text-colour;
+  color: $default-white;
+
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
+  background-color: $failure-text-colour;
+  color: $default-white;
+  }
+}
+
+.btn-on-shift{
+  background-color: $pending-text-colour;
+
+
+  &:link,
+  &:visited,
+  &:hover,
+  &:active {
+  background-color: $pending-text-colour;
+  }
+
+
+  &:disabled{
+    background-color: hsla(30, 69%, 55% , 0.3);
+    border: transparent;
+    color: $default-black;
+  }
+}
+

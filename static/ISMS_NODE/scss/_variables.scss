@@ -1,0 +1,61 @@
+$default-font: Outfit, sans-serif;
+$alternative-font: paralucent-stencil, sans-serif;
+$outfit-thin: 100;
+$outfit-extra-light: 200;
+$outfit-light: 300;
+$outfit-regular: 400;
+$outfit-medium: 500;
+$outfit-semi-bold: 600;
+$outfit-bold: 700;
+$outfit-extra-bold: 800;
+$outfit-black: 900;
+
+$paralucent-extra-light: 200;
+$paralucent-medium: 500;
+$paralucent-heavy: 900;
+
+
+// page colours:
+$page-background-colour: #000000;
+$default-white: #FFFFFF;
+$default-black: #000000;
+$test-black: #000000;
+
+// text colours:
+$core-text-colour: #FDFDFF;
+$core-subtext-colour: #646569;
+$success-text-colour: #21D59B;
+$alt-green-component-colour: #06D6A0;
+$failure-text-colour: #D52941;
+$pending-text-colour: #DB8B3B;
+$core-blue-colour: #3767DE;
+$alternative-blue-color: #C6DDDD;
+$form-check-input-bg: #3767DE;
+
+
+// table colours:
+$table-non-core-elements: #989DA5;
+
+
+// component colours:
+$navigation-background-colour: #0E0F10;
+$navigation-text-colour: #BFBFBF;
+$opaque-card-background-colour: #0E0F10;
+$opaque-card-background-with-opacity: hsla(210, 7%, 6% , 0.6);
+$default-icon-grey: #555555;
+$opaque-card-icon-colour: #555555;
+
+$themes: (
+  purple: (
+    primary: #876AD7, secondary: hsla(256, 58%, 63% , 0.3)
+  )
+);
+
+@mixin theme($themes: $themes) {
+  @each $theme, $colors in $themes {
+    .theme-#{$theme} & {
+      @content($colors);
+    }
+  }
+}
+

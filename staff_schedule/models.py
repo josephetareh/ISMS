@@ -90,17 +90,18 @@ class Shift(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     staff_on_shift = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # todo — on next migration: remove this
-    shift_weekday = models.ForeignKey(Weekday, on_delete=models.CASCADE, blank=False, null=False)
+    weekday = models.ForeignKey(Weekday, null=True, blank=True, on_delete=models.CASCADE)
 
     # todo shift covering functionality here test for normalization
 
     def __str__(self):
-        return "{} shift for {} starting at {} and ending at {}".format(self.shift_weekday, self.staff_on_shift,
-                                                                        self.start_time.time(),
-                                                                        self.end_time.time())
+        return "{} starting at {} and ending at {}".format(self.staff_on_shift,
+                                                           self.start_time.time(),
+                                                           self.end_time.time())
 
     def save(self, *args, **kwargs):
+        current_weekday = self.start_time.weekday()
+        self.weekday = Weekday.objects.get(day=str(current_weekday))
         if self.pk is None:
             # todo: ensure that any changes to the shift will affect any clock ins posted — generally will be a maximum
             #  of 2 the current one and the one that may have been created automatically with celery. this will prevent
@@ -110,6 +111,7 @@ class Shift(models.Model):
                                                                      shift_starts=self.start_time,
                                                                      shift_ends=self.end_time)
             corresponding_clockin.save()
+        super().save(*args, **kwargs)
 
 
 class ClockIn(models.Model):
@@ -139,33 +141,28 @@ class ClockIn(models.Model):
     active = models.BooleanField(default=False)
     on_shift = models.BooleanField(default=False)
     paid = models.BooleanField(default=False)
-    # todo: in future migrations, change this to a decimal
     payment_for_shift = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
     deduction = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
+    final_payment = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
 
     def save(self, *args, **kwargs):
 
-        time_to_shift_beginning = (timezone.now() - self.shift_starts).total_seconds()
-        if time_to_shift_beginning >= 0:
+        time_to_shift_beginning = abs(timezone.now() - self.shift_starts).total_seconds()
+        if timezone.now() >= self.shift_starts:
             # if the current time is greater than the start of the shift then activate the shift
             self.active = True
         else:
             # if the current time is not greater than the shift, but it is within 40 minutes,
             # then also activate the shift. this will be necessary in cases where a new shift is created
             # for new staff and celery does not ever get a chance to run.
-            if abs(divmod(time_to_shift_beginning, 3600)[0]) == 1:
-                # 1 is used here because when the current time is less than the shift starting time,
-                # time_to_shift_beginning will return a negative value. with divmod, when a negative value is
-                # divmoded with a larger value, divmod will return -1.
-
-                # so where we are 39 minutes before the clock in time [2340] seconds, the comparison will carry out
-                # divmod (-2340, 3600), which should return -1
-                if abs(divmod(time_to_shift_beginning, 60)[0]) <= 40:
+            if divmod(time_to_shift_beginning, 3600)[0] == 0:
+                if divmod(time_to_shift_beginning, 60)[0] <= 40:
                     self.active = True
+                else:
+                    self.active = False
             else:
                 self.active = False
 
-        # todo: post testing, only run this on the first instance of the clock in creation
         time_difference = self.shift_ends - self.shift_starts
         hours = divmod(time_difference.total_seconds(), 3600)
         minute_payment_for_shift = 0
@@ -227,15 +224,14 @@ class ClockIn(models.Model):
                 )
 
             if self.on_shift:
-                # for view purposes, we always want to ensure that when a staff is on shift,
-                # the clock in can no longer be marked as activate-able
-                self.active = False
+
+                self.final_payment = self.payment_for_shift - self.deduction
 
                 # when a staff begins a shift, a new clock in must be created for the
                 # corresponding  week after. in the future, we will need to ensure that
                 # this checks for covering status
-                new_start_date, new_end_date =\
-                    self.shift_starts + timedelta(days=7),self.shift_ends + timedelta(days=7)
+                new_start_date, new_end_date = \
+                    self.shift_starts + timedelta(days=7), self.shift_ends + timedelta(days=7)
                 new_clockin, created = ClockIn.objects.get_or_create(shift=self.shift, status="CLSD",
                                                                      shift_starts=new_start_date,
                                                                      shift_ends=new_end_date)

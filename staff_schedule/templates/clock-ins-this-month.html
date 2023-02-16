@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load staffschedule_extras %}
+
+{% block title %}Clock Ins for {{ month_observing }}{% endblock %}
+
+{% block content %}
+    <div id="user-content">
+        <div id="clock-ins-this-month">
+            <section id="header-content"
+                     class="header-content bordered sub-page-divider pb-8 px-9"
+            >
+                 <div
+                        class="d-flex flex-row pointer pt-10 align-items-center"
+                        hx-post="{% url 'schedule:clock-in' %}"
+                        hx-select="#user-content"
+                        hx-target="#user-content"
+                        hx-swap="outerHTML"
+                        hx-push-url="true"
+                        id="back-button"
+                >
+                     <span class="material-symbols-outlined md-24 md-grey">arrow_back</span>
+                    <span class="subtext-shade regular zero-point-eight-seven-five-root">Back to Clock Ins</span>
+                </div>
+
+                <h1 class="sub-core-heading mt-7" id="clock-ins-observing-month">Clock Ins For {{ month_observing }} </h1>
+                <span class="mt-2 core-content-subheading">View and dispute logged clock ins for current and past months</span>
+
+                <div class="d-flex flex-row mt-10 justify-content-between">
+                    <div id="early-clock-ins-heading" class="success-text">
+                        <div>Early Clock Ins</div>
+                        <div class="quadruple-root medium">{{ early_clock_ins_count }}</div>
+                        <div class="subtext-shade zero-point-seven-five-root">From {{ month_observing }} 1, {{ year_observing }} to {{ month_observing }} {{ end_date }}, {{ year_observing }}</div>
+                    </div>
+
+                    <div id="late-clock-ins-heading" class="failure-text">
+                        <div>Late Clock Ins</div>
+                        <div class="quadruple-root medium">{{ late_clock_ins_count }}</div>
+                        <div class="subtext-shade zero-point-seven-five-root">From {{ month_observing }} 1, {{ year_observing }} to {{ month_observing }} {{ end_date }}, {{ year_observing }}</div>
+                    </div>
+
+                    <div id="all-clock-ins-heading">
+                        <div>All Clock Ins</div>
+                        <div class="quadruple-root medium">{{ all_clock_ins_count }}</div>
+                        <div class="subtext-shade zero-point-seven-five-root">From {{ month_observing }} 1, {{ year_observing }} to {{ month_observing }} {{ end_date }}, {{ year_observing }}</div>
+                    </div>
+                </div>
+
+                <div class="d-flex mt-8">
+                    <button
+                            class="material-symbols-outlined md-36 md-blue button icon-flip pointer"
+                            hx-post = "{% url 'schedule:month-clock-ins' previous_month_query previous_year_query %}"
+                            hx-select="#user-content"
+                            hx-target="#user-content"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                    >next_plan</button>
+                    <button
+                            class="material-symbols-outlined button md-36 md-blue"
+                            {{ next_button_disabled }}
+                            hx-post = "{% url 'schedule:month-clock-ins' next_month_query next_year_query %}"
+                            hx-select="#user-content"
+                            hx-target="#user-content"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                    >next_plan</button>
+                </div>
+
+            </section>
+
+            <section id="tabular-content" class="px-9 mt-10">
+                <div class="d-flex flex-row justify-content-between align-items-center">
+                    <div class="thin one-point-five-root">
+                        {{ month_observing }} Clock Ins List
+                    </div>
+                    <div class="d-flex flex-row align-items-center">
+                        <button
+                                id="clock-in-dispute-button"
+                                class="btn-core-ghost medium
+                                zero-point-eight-seven-five-root py-5 px-7 me-6"
+                                hx-boost="true"
+                                hx-post="{% url 'schedule:dispute-clock-ins' %}"
+                                hx-select="#user-content"
+                                hx-target="#user-content"
+                                hx-swap="outerHTML"
+                                disabled
+                        >Dispute Clock In</button>
+                        <button
+                                class="btn-alt-ghost medium zero-point-eight-seven-five-root py-5 px-7 d-flex align-items-center"
+                        >
+                            <span class="material-symbols-outlined md-18 me-2">tune</span>
+                            <span>Add Filters</span> </button>
+                    </div>
+                </div>
+
+
+                {# todo: pagination here #}
+
+                <table class="table mt-9">
+                    <thead class="subpage-table">
+                        <tr>
+                            <th scope="col" class="py-4 ps-10"></th>
+                            <th scope="col" class="py-4">ID</th>
+                            <th scope="col" class="py-4 pe-14">Date</th>
+                            <th scope="col" class="py-4">Start</th>
+                            <th scope="col" class="py-4">Clocked</th>
+                            <th scope="col" class="py-4">Deduction</th>
+                            <th scope="col" class="py-4">Payment</th>
+                            <th scope="col" class="py-4">Status</th>
+                            <th scope="col" class="py-4"></th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        {% for clock_in in month_clock_ins %}
+                            <tr class="sub-table-data clock-in-table">
+                                <td class="py-5 ps-10">
+                                    <label for="{{ clock_in.id }}"><span class="d-none">Select Clock In {{ clock_in.id }}</span></label>
+                                    <input
+                                            type="checkbox" class="form-check-input"
+                                            id="{{ clock_in.id }}" name="clock-in-{{ clock_in.id }}" value="{{ clock_in.id }}"
+                                            {% if clock_in.status == "EA" or  clock_in.status == "DSPS"%}
+                                            disabled
+                                            {% endif %}
+                                    />
+                                </td>
+                                <td class="py-5 table-non-core light">CID-{{ clock_in.id }}</td>
+                                <td class="py-5 table-non-core light">{{ clock_in.shift_starts | date:"dS M Y" }}</td>
+                                <td class="py-5 table-core">{{ clock_in.shift_starts | date:"H:i" }}</td>
+                                <td class="py-5 table-core">{{ clock_in.time_clocked_in | date:"H:i" }}</td>
+                                <td class="py-5 table-core">{{ clock_in.deduction }} NGN</td>
+                                <td class="py-5 table-core">{{ clock_in.payment_for_shift | subtract:clock_in.deduction  }} NGN</td>
+                                <td class="py-5 table-core">
+                                    <span class="d-none status-identifier">{{ clock_in.status }}</span>
+                                    <span class="material-symbols-outlined md-36 me-1 status-icon-indicator"></span>
+                                    <span class="status-text"></span>
+                                </td>
+                                <td class="py-5 alternative-blue medium table-core" hx-boost="true" hx-select="#user-content" hx-target="#user-content" hx-swap="outerHTML">
+                                    <a href="{% url 'schedule:clock-in-insights' clock_in.id %}">Insights
+                                    <span class="material-symbols-outlined md-36 ms-1">arrow_circle_right</span>
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </section>
+            <script src="{% static 'js/clock_ins_view/clockInDisputeSelector.js' %}" defer></script>
+            <script src="{% static 'js/clock_ins_view/totalClockInsHandler.js' %}" defer></script>
+        </div>
+    </div>
+{% endblock %}

@@ -1,5 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django_json_widget.widgets import JSONEditorWidget
 
 from user_configuration.models import CustomUser
 
@@ -11,13 +12,21 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email',)
+        fields = ('email', 'basic_hourly_wage', 'preferences')
+
+        widgets = {
+            'preferences': JSONEditorWidget
+        }
 
 
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ('email', 'basic_hourly_wage')
+        fields = ('email', 'basic_hourly_wage', 'preferences')
+
+        widgets = {
+            'preferences': JSONEditorWidget
+        }
 
 
 class UserLoginForm(forms.Form):

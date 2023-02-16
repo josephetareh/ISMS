@@ -4,14 +4,25 @@
 <html lang="en">
     <head>
         <meta charset="UTF-8">
-        <title>{% block title %}{% endblock %}</title>
+        <title id="page-title" hx-swap-oob="true" hx-swap="outerHTML">{% block title %}{% endblock %}</title>
         <script src="{% static 'js/htmx/htmx.min.js' %}" defer></script>
         <script src="{% static 'js/htmx/ext/debug.js' %}" defer></script>
+        <script src="{% static 'js/htmx/ext/multi-swap.js' %}" defer></script>
+        <script src="https://unpkg.com/hyperscript.org@0.9.7" defer></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.11.1/dist/cdn.min.js"></script>
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,100,0,200">
+        <link rel="stylesheet" href="{% static 'ISMS_NODE/scss/base.min.css' %}">
         {% django_htmx_script %}
     </head>
-    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}' class="h-100 {{ theme }}" hx-ext="multi-swap">
         {% block content %}
 
         {% endblock %}
+            <script>
+            document.body.addEventListener('htmx:load', function (evt) {
+              {#htmx.logAll();#}
+            });
+        </script>
     </body>
 </html>

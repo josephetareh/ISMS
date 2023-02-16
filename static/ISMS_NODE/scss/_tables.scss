@@ -1,0 +1,78 @@
+thead.subpage-table{
+  color: $core-subtext-colour;
+  background-color: $opaque-card-background-colour;
+  border: transparent;
+}
+
+th{
+  font-weight: $outfit-regular;
+  font-size: 0.875rem;
+}
+
+td{
+  font-weight: $outfit-regular;
+  font-size: 0.875rem;
+  vertical-align: middle;
+}
+
+td span{
+    display: inline-block;
+    vertical-align: middle;
+}
+
+tr.sub-table-data{
+  border-bottom: $opaque-card-background-colour solid 0.0625rem;
+  border-bottom-width: 0;
+}
+
+.table-non-core{
+  color: $table-non-core-elements;
+}
+
+.table-core{
+  color: $default-white;
+}
+
+
+//tr.subpage-data.zero-border{
+//  border-bottom: transparent;
+//}
+
+th:first-child{
+  border-radius: 0.3125rem 0 0 0.3125rem;
+}
+
+th:last-child{
+  border-top-right-radius: 0.3125rem;
+  border-bottom-right-radius: 0.3125rem;
+}
+
+.user-table{
+  display: table;
+  width: 100%;
+}
+
+.user-table-header{
+  display: table-header-group;
+  background-color: $opaque-card-background-colour;
+  font-weight: $outfit-semi-bold;
+  font-size: 0.875rem;
+  color: $core-subtext-colour;
+  border-radius: 0.3125rem;
+}
+
+.table-header-item{
+  display: table-cell;
+}
+
+.user-table-body{
+  display: table-row-group;
+}
+
+.user-table-row{
+  display: table-row;
+}
+
+.user-table-row-item{
+  display: table-cell;
+}

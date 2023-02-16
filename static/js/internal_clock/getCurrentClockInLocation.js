@@ -1,16 +1,30 @@
+
+
 function getClockInLatLong(){
 
     const clockInMessage = document.getElementById('clock-in-message');
-    let clockInButton = document.getElementById("clock-in-status");
+    let clockInButton = document.getElementById("clock-in-button");
 
     function success(position){
         const latitude = position.coords.latitude
         const longitude = position.coords.longitude;
-        let hxData = `{"shift-activated": "True", "latitude": ${latitude}, "longitude": ${longitude}}`;
-        clockInButton.setAttribute("hx-vals", hxData)
-        let content = document.createTextNode("Clock In")
-        clockInButton.appendChild(content)
+        let hxValsData = `{"shift-activated": "True", "latitude": ${latitude}, "longitude": ${longitude}}`;
+        let hxTargetData = "#shift-activation-section"
+        let hxSelectData = "#shift-activation-section"
+        let hxSwapData ="multi:#shift-activation-section,#clock-in-starts:outerHTML"
+        let hxPostData = clockInButton.getAttribute('jx-post');
+        clockInButton.removeAttribute('jx-post');
 
+
+        clockInButton.setAttribute("hx-vals", hxValsData)
+        clockInButton.setAttribute('hx-target', hxTargetData);
+        clockInButton.setAttribute('hx-swap', hxSwapData)
+        clockInButton.setAttribute('hx-post', hxPostData)
+        clockInButton.removeAttribute('onclick')
+        let content = document.createTextNode("Clock In");
+        clockInButton.innerHTML = "";
+        clockInButton.appendChild(content);
+        htmx.process(clockInButton)
     }
 
     function error(){
@@ -24,17 +38,12 @@ function getClockInLatLong(){
                 "please visit the super admin to report this issue");
             clockInMessage.appendChild(content);
         } else {
-            // remove the disabled status from the button if the clock is enabled
-            if (clockInButton.hasAttribute('data-button-status')){
-                if (clockInButton.getAttribute("data-button-status") === "clock-in-enabled"){
-                    let content = document.createTextNode("Loading");
-                    clockInButton.appendChild(content);
-                    clockInButton.disabled = false
-                }
-            }
+            clockInButton.innerHTML = "";
+            clockInButton.appendChild(document.createTextNode('Locating...'))
             navigator.geolocation.getCurrentPosition(success, error);
         }
 
 }
 
-window.addEventListener("load", getClockInLatLong);
+// document.querySelector('#clock-in-button').addEventListener('click', getClockInLatLong);
+// document.body.addEventListener('htmx:afterSettle', getClockInLatLong)

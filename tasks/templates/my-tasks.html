@@ -1,28 +1,24 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    <h1>User Tasks</h1>
-{#    {% for task in user_tasks %}#}
-{#        <div>{{ task }}</div>#}
-{#        <div>{{ task.get_status_display }}</div>#}
-{#        <div>{{ task.start_date }}</div>#}
-{#        <div>{{ task.deadline_date }}</div>#}
-{#        <br>#}
-{#    {% endfor %}#}
+    {# you can add hx-boost=false on any urls that you do not want boosted #}
+    <div id="body-content"
+         hx-boost="true"
+         hx-target="#body-content"
+         hx-select="#body-content"
+         hx-swap="outerHTML"
+         hx-push-url="true"
+    >
+        <h1>User Tasks</h1>
 
-{#    {% for task, subtask in user_tasks.items %}#}
-{#        <div>{{ task }}</div>#}
-{#        <div>{{ task.get_status_display }}</div>#}
-{#        <div>{{ task.start_date }}</div>#}
-{#        <div>{{ task.deadline_date }}</div>#}
-{#        <br>#}
-{#        {% for s in subtask %}#}
-{#            <div>{{ s.subtask_name }}</div>#}
-{#            {% if s.dependencies.all %}#}
-{#                <div>{{ s.dependencies.all }}</div>#}
-{#                <div>{{ s.from_subtask }}</div>#}
-{#            {% endif %}#}
-{#        {% endfor %}#}
-{#    {% endfor %}#}
+        {% for task, subtasks in task_items.items %}
+            <a href="{% url 'my-tasks:task-detail' task.id task.slug%}">{{ task.task_name }}</a>
+            <br>
+            {% for subtask in subtasks %}
+                {{ subtask.subtask_name }}
+            {% endfor %}
+        {% endfor %}
+    </div>
+
 
 {% endblock %}

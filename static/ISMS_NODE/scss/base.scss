@@ -1,0 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url("https://use.typekit.net/ykg8mvx.css");
+$spacer: 1rem !default;
+$spacers: () !default;
+$spacers: map-merge(
+                (
+                        0: 0,
+                        1: ($spacer * .25),    //4px
+                        2: ($spacer * .5),     //8px
+                        3: ($spacer * .75),
+                        4: $spacer,            //16px
+                        5: ($spacer * 1.25), // 20px
+                        6: ($spacer * 1.5),    //24px
+                        7:($spacer * 2), // 32px
+                        8: ($spacer * 2.5),  // 40 px
+                        9: ($spacer * 3),      //48px
+                        10: ($spacer * 4),      //64px
+                        11: ($spacer * 5),      //80px
+                        12: ($spacer * 6.25),   //100px
+                        13: ($spacer * 7.5),    //120px
+                        14: ($spacer * 9.375)  //150px
+                ),
+                $spacers
+);
+
+
+
+$grid-breakpoints: (
+        xxs: 0,
+        xs: 281px,
+        sm: 576px,
+        md: 768px,
+        lg: 992px,
+        xl: 1200px,
+        xxl: 1400px,
+        xxxl: 1600px,
+);
+
+@import "../node_modules/bootstrap/scss/bootstrap";
+@import "_variables";
+@import '_core_pages';
+@import '_clock_in_components';
+@import "_icons";
+@import "_buttons";
+@import "_general_components";
+@import "_tables";
+@import "_general_use";

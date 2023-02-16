@@ -1,0 +1,26 @@
+.clock-in-board{
+  border: 0.125rem solid $opaque-card-background-colour;
+  border-radius: 1.25rem;
+}
+
+.clock-board{
+  background-color: $opaque-card-background-colour;
+  font-size: 3rem;
+  border-radius: .3125rem;
+  font-family: $alternative-font;
+  font-weight: $paralucent-medium;
+}
+
+.date-header{
+  background-color: #862217;
+  border-radius: .3125rem .3125rem 0 0;
+  font-family: $alternative-font;
+  font-weight: $paralucent-medium;
+}
+
+.date-footer{
+  background-color: $opaque-card-background-colour;
+  border-radius: 0 0 .3125rem .3125rem;
+  font-family: $alternative-font;
+  font-weight: $paralucent-medium;
+}

@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load staffschedule_extras %}
+{% block title %}Clock In {{ clock_in.id }}{% endblock %}
+
+{% block content %}
+    <div id="user-content">
+        <div id="clock-in-detail">
+            <section id="header-content"
+                     class="header-content px-9">
+                {# todo: send the date and the pagination value into the htmx request to allow good back button interaction #}
+                 <div
+                    class="d-flex flex-row pointer pt-10 align-items-center"
+                    hx-post="{% url 'schedule:clock-in' %}"
+                    hx-select="#user-content"
+                    hx-target="#user-content"
+                    hx-swap="outerHTML"
+                    hx-push-url="true"
+                    id="back-button"
+                 >
+                     <span class="material-symbols-outlined md-24 md-grey">arrow_back</span>
+                    <span class="subtext-shade regular zero-point-eight-seven-five-root">Back to Clock Ins</span>
+                 </div>
+
+                <h1 class="sub-core-heading mt-7" id="clock-ins-observing-month">
+                    Insights on CID-{{ clock_in.id }} — {{ clock_in.shift_starts | date:"dS F Y"}}</h1>
+                <span class="mt-2 core-content-subheading">Clock in insights give you more information about a specific shift,
+                    including when the clock in opened and what time you clocked in</span>
+            </section>
+
+            <section id="body-content" class="px-9">
+                <div class="d-flex flex-row flex-wrap justify-content-between mt-10 ">
+                    <div class="greened-insights d-flex flex-column py-6 alt-text align-items-center">
+                         <span class="material-symbols-outlined md-36 px-14">work_history</span>
+                            <div class="mt-4 semi-bold">Shift Time</div>
+                            <div class="semi-bold triple-root">{{ clock_in.shift_starts | date:"H:i" }}</div>
+                    </div>
+
+                    <div class="blued-insights d-flex flex-column py-6 alt-text align-items-center">
+                         <span class="material-symbols-outlined md-36 px-14">lock_clock</span>
+                            <div class="mt-4 semi-bold">Clock In Opens</div>
+                            <div class="semi-bold triple-root">{{ clock_in.shift_starts | get_clock_in_opening | date:"H:i" }}</div>
+                    </div>
+
+                    <div class="purpled-insights d-flex flex-column py-6 alt-text align-items-center">
+                         <span class="material-symbols-outlined md-36 px-14">timer</span>
+                            <div class="mt-4 semi-bold">Clocked In</div>
+                            <div class="semi-bold triple-root">{{ clock_in.time_clocked_in| date:"H:i" }}</div>
+                    </div>
+
+                    <div class="w-100"></div>
+
+                    <div class="d-flex flex-column align-items-center">
+                        <div class="opaque-board pt-9 pb-10 d-flex flex-column align-items-center mt-10 me-7">
+                             <span class="material-symbols-outlined md-36 md-red px-14">remove</span>
+                            <div class="mt-6">CID-{{ clock_in.id }} Deduction</div>
+                            <div class="triple-root semi-bold failure-text">{{ clock_in.deduction }}</div>
+                            <span class="zero-point-eight-seven-five-root subtext-shade">Naira</span>
+                            <div class="failure-text medium mt-8">was removed for lateness</div>
+                        </div>
+                        <button class="btn-core-ghost medium
+                        zero-point-eight-seven-five-root py-5 px-7 me-6 mt-7" disabled>Dispute Clock In</button>
+                    </div>
+
+
+                    <div class="transparent-bord d-flex flex-column align-items-center justify-content-center py-9 px-14 mt-10 flex-grow-1">
+                        <div class="medium" style="font-size: 4rem">Total Earned</div>
+                        <div class="success-text alt-fnt" style="font-size: 7.5rem; color: #26C485;">{{ clock_in.final_payment }} NGN</div>
+                        {# todo: add this functionality #}
+                    </div>
+                </div>
+
+
+            </section>
+        </div>
+    </div>
+{% endblock %}

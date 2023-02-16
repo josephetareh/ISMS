@@ -13,9 +13,9 @@ class EventTypeAdmin(admin.ModelAdmin):
     list_display = ('type',)
 
 
-# @admin.register(Weekday)
-# class WeekdayAdmin(admin.ModelAdmin):
-#     list_display = ("day",)
+@admin.register(Weekday)
+class WeekdayAdmin(admin.ModelAdmin):
+    list_display = ("day",)
 
 
 class EventPersonnelInline(admin.TabularInline):
@@ -31,8 +31,7 @@ class EventAdmin(admin.ModelAdmin):
 
 @admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ("staff_on_shift", "shift_weekday", )
-
+    list_display = ("staff_on_shift", )
 
 @admin.register(ClockIn)
 class ClockInAdmin(admin.ModelAdmin):

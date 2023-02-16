@@ -2,6 +2,8 @@ from django.conf import settings
 from django.db import models
 
 # Create your models here.
+from django.utils.text import slugify
+
 STATUS_CHOICES = [
     ("FR", "Fresh Tasks"),
     ("IPR", "In Progress Tasks"),
@@ -30,9 +32,15 @@ class Task(models.Model):
     working_on = models.ManyToManyField(settings.AUTH_USER_MODEL, blank=True, related_name="working_on")
     last_modified = models.DateTimeField(auto_now=True)
     description = models.TextField()
+    slug = models.SlugField(default="", null=False, blank=True, max_length=128)
 
     def __str__(self):
         return self.task_name
+
+    def save(self, *args, **kwargs):
+        if not self.slug or self.slug == "":
+            self.slug = slugify(self.task_name)
+        super().save(*args, **kwargs)
 
 
 class SubTask(models.Model):
@@ -44,14 +52,14 @@ class SubTask(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name="subtask_parent")
     subtask_name = models.CharField(max_length=128)
     status = models.CharField(choices=STATUS_CHOICES, max_length=4)
-    dependencies = models.ManyToManyField('self', through='SubTaskDependency',
-                                          symmetrical=False, blank=True)
+    dependencies = models.ManyToManyField('self', through='SubTaskDependency', blank=True)
     created_on = models.DateTimeField(auto_now_add=True)
     last_modified = models.DateTimeField(auto_now=True)
     description = models.TextField()
     subtask_type = models.CharField(max_length=4, choices=SUBTASK_TYPE_CHOICES, default="GTSK")
     assigned_to = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     subtask_order = models.PositiveIntegerField(blank=True, null=True)
+    slug = models.SlugField(default="", null=False, blank=True, max_length=128)
 
     def __str__(self):
         return self.subtask_name
@@ -60,6 +68,9 @@ class SubTask(models.Model):
         working_task = Task.objects.get(id=self.task.id)
         working_task.working_on.add(self.assigned_to)
         working_task.save()
+        if not self.slug or self.slug == "":
+            slug_name = self.subtask_name
+            self.slug = slugify(slug_name)
         super().save(*args, **kwargs)
 
 

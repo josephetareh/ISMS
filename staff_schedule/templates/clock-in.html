@@ -3,43 +3,181 @@
 {% load staffschedule_extras %}
 
 {% block content %}
-    <div id="clock"></div>
+    <div id="user-content" class="ms-9">
+        <div id="clock-ins">
+            <div class="d-flex flex-row">
+                <div class="d-flex flex-column single-page-divider pe-7 py-10">
 
-    <div id="clock-in-message"></div>
-    <br>
+                    <div class="d-flex flex-row align-items-baseline">
+                        <h1 class="core-page-heading mb-0">Clock In Service</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-3">work_history</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">Showing up on time is a crucial part of iSweat policy.
+                        Be sure to hit the clock in button on time to ensure that you do not receive any deductions</div>
 
-    <ul class="messages" id="clock-in-request-messages" hx-swap-oob="true">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
+                    <div class="core-general-heading mt-10">Shift Activation</div>
+                    <div class="mt-2 mb-6 core-content-subheading">Shifts must be activated from ISMS to receive your final salary.
+                        Your clock ins will open 40 minutes before your shift starts
+                    </div>
 
-    <div>Clock in Time: {{ active_clock_in.shift_starts }}</div>
-    <br>
-    <div>Opening time: {{ time_to_open }}</div>
+                    <section class="d-flex flex-row flex-wrap g-0">
+                        <div class="col-5 clock-in-board pt-9 pb-7 ps-7">
+                            <span class="material-symbols-outlined md-36 md-grey">lock_clock</span>
+                            <div
+                                    class="semi-bold one-point-one-two-five-root mt-4 "
+                                    id="clock-in-status"
+                            >
+                                {% if active_clock_in.status is None%}
+                                    No Clock In Available
+                                {% endif %}
+                            </div>
+                            <div
+                                    id="clock-in-starts"
+                                    class="semi-bold triple-root"
+                                    data-next-clock-in-time-to-open="{{ time_to_open }}"
+                                    data-shift-starting-time="{{ iso_shift_starting_time }}"
+                                    data-shift-ending-time = "{{ iso_shift_ending_time }}"
+                                    data-shift-started ="{{ active_clock_in.on_shift }}"
+                                    data-shift-activated = "{{ active_clock_in.active }}"
+                            >
+                                {% if active_clock_in.status is None %}
+                                    0
+                                {% else %}
 
-    <br>
-    {{ active_clock_in.active }}
-    <br>
-    {{ active_clock_in.get_status_display }}
+                                {% endif %}
+                            </div>
+                            <div class="regular subtext-shade zero-point-seven-five-root mt-2" id="time-until-classifier">
+                                Minutes
+                            </div>
+                        </div>
 
-    <button disabled
-            id="clock-in-status"
-            data-button-status= "{{ clock_in_button_info.1 }}"
-            type="submit"
-            hx-post="{% url 'schedule:clock-in' %}"
-            hx-target="#clock-in-details"
-            hx-select="#clock-in-details"
-            hx-swap="outerHTML"
-            hx-vals='{"shift-activated": "True"}'
-    >Clock In {{ clock_in_button_info.1 }}</button>
+                        <div class="col-4 ms-7" id="shift-activation-section" >
+                            <div class="clock-board">
+                                <div id="clock" class="py-9 ps-7 pe-6 subtext-shade"></div>
+                            </div>
 
-    <div id="clock-in-details">
-        clocked in: {{ active_clock_in.time_clocked_in }}
-        <br>
-        deduction: {{ active_clock_in.deduction }}
+                            <button
+                                    disabled
+                                    class="btn-primary btn-clock-in mt-9 py-5 w-100"
+                                    type="submit"
+                                    id="clock-in-button"
+                                    onclick="getClockInLatLong()"
+                                    data-button-status= "{{ clock_in_button_info.1 }}"
+                                    jx-post="{% url 'schedule:log-cock-in' active_clock_in.id %}"
+
+                            >Begin Clock In</button>
+                        </div>
+                    </section>
+
+                    <div class="col-12" hx-swap="outerHTML" id="error-message">
+                            {% if messages %}
+                                {% for message in messages %}
+                                <div class="{{ message.tags }} zero-point-seven-five-root semi-bold
+                                 py-6 px-4 mt-5 text-wrap ms-4 w-75">{{ message }}</div>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+
+                    <div class="core-general-heading mt-10">Clock In Details</div>
+                    <div class="mt-2 mb-6 core-content-subheading">ISMS keeps a log of every clock in that
+                        you make while at iSweat Fitness</div>
+
+                    <section class="text-center">
+                        <section class="row g-0 mt-6" id="clock-in-details">
+                            <div
+                                    class="col-5 opaque-board pointer"
+                                    hx-post="{% url 'schedule:month-clock-ins' current_time|date:"n" current_time|date:"o" %}"
+                                    hx-swap="outerHTML"
+                                    hx-select="#user-content"
+                                    hx-target="#user-content"
+                                    hx-push-url="true"
+                            >
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">history</span>
+                                <div class="semi-bold mt-4">Clock Ins This Month</div>
+                                <div class="semi-bold triple-root">{{ monthly_clockin_count }}</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Clock Ins</div>
+                            </div>
+
+                            <div class="col-5 opaque-board ms-7">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">history</span>
+                                <div class="semi-bold mt-4">Total Clock Ins</div>
+                                <div class="semi-bold triple-root">{{ total_clock_in_count }}</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Clock Ins</div>
+                            </div>
+
+                            <div class="col-5 opaque-board mt-7">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">hourglass_top</span>
+                                <div class="semi-bold mt-4">Early Clock Ins</div>
+                                {# todo: remove placeholder #}
+                                <div class="semi-bold triple-root">2</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Times</div>
+                                <div class="mb-10 d-flex align-items-center justify-content-center">
+                                    <span class="material-symbols-outlined md-36 md-green">arrow_upward</span>
+                                    <div class="semi-bold root-size success-text">15 times this month</div>
+                                </div>
+                            </div>
+
+                            <div class="col-5 opaque-board ms-7 mt-7">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">hourglass_bottom</span>
+                                <div class="semi-bold mt-4">Late Clock Ins</div>
+                                {# todo: remove placeholder #}
+                                <div class="semi-bold triple-root">2</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Times</div>
+                                <div class="mb-10 d-flex align-items-center justify-content-center">
+                                    <span class="material-symbols-outlined md-36 md-red">arrow_downward</span>
+                                    <div class="semi-bold root-size failure-text">16 times this month</div>
+                                </div>
+                            </div>
+                        </section>
+                    </section>
+                </div>
+
+
+                <div class="d-flex flex-column ps-7 pt-10">
+                     <h2 class="core-page-side-heading mb-0">Personal Rota</h2>
+                    <div class="mt-2 core-content-subheading">Your Personal Rota Displays all
+                        the Times You Are Expected at Work</div>
+
+                    <div class="core-general-heading mt-10">Your Shifts</div>
+                    <div class="mt-2 mb-6 core-content-subheading">Your Shifts Display the Times You are Expected to Clock In </div>
+
+                    <section class="mt-6">
+                            {% for clock_in in all_clock_ins %}
+                                <div class="d-flex flex-row align-items-center">
+                                    <div class="d-flex flex-column">
+                                         <div class="date-header py-2 zero-point-seven-five-root px-8">
+                                             {{ clock_in.shift_starts | date:"D" }}
+                                        </div>
+                                        <div class="date-footer py-3 px-4 one-point-five-root text-center">
+                                            {{ clock_in.shift_starts | date:"d" }}
+                                        </div>
+                                    </div>
+                                    <div class="one-point-one-two-five-root thin ms-4">
+                                        {{ clock_in.shift_starts | date:"F" }}
+                                    </div>
+                                </div>
+
+                                <div class="clock-in-board mt-7 ps-7">
+                                    <span class="material-symbols-outlined md-36 md-grey mt-9">schedule</span>
+                                    <div class="semi-bold subtext-shade one-point-one-two-five-root">Shift Time</div>
+                                    <div class="d-flex flex-row mt-6 alt-fnt alt-fnt-medium double-root align-items-center">
+                                        <span>{{ clock_in.shift_starts | date:"H:i" }}</span>
+                                        <span class="material-symbols-outlined md-36 md-grey mx-2">trending_flat</span>
+                                        <span>{{ clock_in.shift_ends | date:"H:i" }}</span>
+                                    </div>
+                                    <div class="mt-2 mb-9 zero-point-eight-seven-five-root subtext-shade">
+                                        Clock in opens at {{ clock_in.shift_starts|get_clock_in_opening|date:"H:i" }}
+                                    </div>
+                                </div>
+                            {% endfor %}
+
+
+                    </section>
+                </div>
+            </div>
+        <script src="{% static 'js/internal_clock/currenttime.js' %}" defer></script>
+        <script src="{% static 'js/internal_clock/getCurrentClockInLocation.js' %}" defer></script>
+        <script src="{% static 'js/internal_clock/manipulateClockInDate.js' %}" defer></script>
+        </div>
     </div>
-
-    <script src="{% static 'js/internal_clock/currenttime.js' %}" defer></script>
-    <script src="{% static 'js/internal_clock/getCurrentClockInLocation.js' %}" defer></script>
 {% endblock %}

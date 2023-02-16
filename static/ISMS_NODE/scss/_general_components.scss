@@ -1,0 +1,23 @@
+.opaque-board{
+  background-color: $opaque-card-background-colour;
+  border-radius: 1.25rem;
+}
+
+.transparent-bord{
+  border: 0.125rem solid $opaque-card-background-colour;
+  border-radius: 1.25rem;
+}
+
+.single-page-divider{
+  border-right: .09375rem solid $opaque-card-background-colour;
+}
+
+.sub-page-divider{
+  border-bottom: .09375rem solid $opaque-card-background-colour;
+}
+
+.error{
+  background-color: hsla(354, 65%, 47% , 0.06);
+  color: $failure-text-colour;
+  border-radius: 0.3125rem;
+}

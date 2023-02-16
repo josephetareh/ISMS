@@ -26,6 +26,8 @@ def staff_login(request):
                 # set the timezone based on the middleware described in user_configuration/middleware.py
                 request.session['django_timezone'] = 'Africa/Lagos'
                 login(request, user)
+                # todo: consider using memcached for all this
+                # todo: TOMORROW: LEARN ABOUT SASS MIXINS
                 return redirect('user_configuration:dashboard')
             else:
                 messages.error(request, "Invalid Credentials!")
