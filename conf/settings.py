@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'debug_toolbar',
     'django_json_widget',
     'django_htmx',
@@ -140,11 +141,15 @@ CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 STATIC_URL = 'static/'
 
+MEDIA_URL = "media/"
+
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'staff_schedule/static/'),
     os.path.join(BASE_DIR, 'user_configuration/static/'),
     os.path.join(BASE_DIR, 'static/')
 ]
+
+MEDIA_ROOT = BASE_DIR / "uploads"
 
 # STATIC_ROOT = "static"
 

@@ -56,13 +56,13 @@ class Event(models.Model):
     event_name = models.CharField(max_length=300, blank=False)
     description = models.TextField(max_length=1000, blank=True, null=True)
     type = models.ForeignKey(EventType, on_delete=models.CASCADE)
-    # todo: before next migration make these DateTimeFields
-    start_time = models.TimeField()
-    end_time = models.TimeField()
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
     location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
     staff_working = models.ManyToManyField(settings.AUTH_USER_MODEL, through="EventPersonnel",
                                            through_fields=('event', 'staff_on_event'))
     event_day = models.ForeignKey(Weekday, null=False, on_delete=models.CASCADE)
+    slug = models.SlugField(max_length=12,  blank=True, null=True)
 
     # positive integer field here to show how many times the event will be recurring for.
     # another field to say that the recurring of the event is true
@@ -71,6 +71,12 @@ class Event(models.Model):
 
     def __str__(self):
         return self.event_name
+
+    def save(self, *args, **kwargs):
+        if not self.id:
+            super().save(*args, **kwargs)
+        self.slug = f"{self.type.type}-ID-{self.location.location_name}-{self.id}"
+        super().save(*args, **kwargs)
 
 
 class EventPersonnel(models.Model):
@@ -244,3 +250,36 @@ class ClockIn(models.Model):
                     # todo: send mail saying that a periodic task weirdly does not exist
                     pass
             super().save(*args, **kwargs)
+
+
+class Dispute(models.Model):
+    status = [
+        ("FL", "Failed"),
+        ("PND", "Pending"),
+        ("SUC", "Success")
+    ]
+    clock_in = models.OneToOneField(ClockIn, on_delete=models.CASCADE, primary_key=True)
+    dispute_status = models.CharField(choices=status, max_length=3, blank=True, default="PND")
+    date_disputed = models.DateTimeField(auto_now_add=True)
+    dispute_description = models.TextField(max_length=400, blank=True, null=True)
+    dispute_reply = models.TextField(max_length=1000, blank=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if self.date_disputed is None:
+            # on the first instance of creation (when the date disputed is none)
+            # — change the status of the clock in to disputing
+            # TODO: SERIOUS — POST TESTING:
+            self.clock_in.status = "DSP"
+            self.clock_in.save()
+        super().save(*args, **kwargs)
+
+
+def dispute_upload_directory_path(instance, filename):
+    return f"disputes/attachments/clock-in-{instance.dispute.clock_in.id}/{filename}"
+
+
+class DisputeAttachment(models.Model):
+    description = models.CharField(max_length=280, blank=True)
+    document = models.FileField(upload_to=dispute_upload_directory_path, null=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    dispute = models.ForeignKey(Dispute, on_delete=models.CASCADE, blank=False, null=False)

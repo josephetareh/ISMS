@@ -3,9 +3,18 @@
   border-radius: 1.25rem;
 }
 
-.transparent-bord{
+.transparent-board{
   border: 0.125rem solid $opaque-card-background-colour;
   border-radius: 1.25rem;
+}
+
+.mini-board{
+  border-radius: 0.3125rem;
+}
+
+.file-divider{
+  border-radius: 0.3125rem;
+  background-color: $opaque-card-background-colour;
 }
 
 .single-page-divider{
@@ -20,4 +29,37 @@
   background-color: hsla(354, 65%, 47% , 0.06);
   color: $failure-text-colour;
   border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.warning{
+  background-color: hsla(30, 59%, 55% , 0.06);
+  color: $pending-text-colour;
+  border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.success{
+  background-color: hsla(161, 73%, 48% , 0.06);
+  color: $success-text-colour;
+  border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.CS-syntax-highlight{
+  background-color: hsla(346, 81%, 57% , 0.1);
+  color: #EA3963;
+  border-radius: 4.25rem;
+}
+
+.MT-syntax-highlight{
+  background-color: hsla(267, 91%, 57% , 0.1);
+  color: #882FF5;
+  border-radius: 4.25rem;
+}
+
+.PT-syntax-highlight{
+  background-color: hsla(254, 91%, 56% , 0.1);
+  color: #5B2AF5;
+  border-radius: 4.25rem;
 }

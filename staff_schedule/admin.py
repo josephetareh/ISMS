@@ -1,6 +1,7 @@
 from django.contrib import admin
 
-from staff_schedule.models import Event, EventType, Location, EventPersonnel, Weekday, Shift, ClockIn
+from staff_schedule.models import Event, EventType, Location, EventPersonnel, Weekday, Shift, ClockIn, Dispute, \
+    DisputeAttachment
 
 
 @admin.register(Location)
@@ -24,15 +25,26 @@ class EventPersonnelInline(admin.TabularInline):
 
 @admin.register(Event)
 class EventAdmin(admin.ModelAdmin):
-    list_display = ('event_name', 'start_time', 'end_time', 'location')
-    list_editable = ('start_time', 'end_time')
+    list_display = ('event_name', 'location')
+    # list_editable = ('start_time', 'end_time')
     inlines = [EventPersonnelInline]
 
 
 @admin.register(Shift)
 class ShiftAdmin(admin.ModelAdmin):
-    list_display = ("staff_on_shift", )
+    list_display = ("staff_on_shift",)
+
 
 @admin.register(ClockIn)
 class ClockInAdmin(admin.ModelAdmin):
     list_display = ("shift", "time_clocked_in", "status")
+
+
+@admin.register(Dispute)
+class DisputeAdmin(admin.ModelAdmin):
+    list_display = ("clock_in", "dispute_status")
+
+
+@admin.register(DisputeAttachment)
+class DisputeAttachmentAdmin(admin.ModelAdmin):
+    list_display = ("dispute", "document")

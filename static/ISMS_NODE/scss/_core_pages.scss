@@ -14,6 +14,32 @@ a{
   }
 }
 
+input[type=file]{
+  display: none;
+}
+
+input::file-selector-button{
+  display: None;
+}
+
+//input[type=file]{
+//  display: none;
+//}
+
+//input[type="file"]{
+//  display: none;
+//  background-color: transparent;
+//
+//   // Add a custom icon before the file input button
+//  &::before {
+//    content: 'Add Supporting Files';
+//    display: inline-block;
+//    padding: 8px;
+//    background-color: #cc2424;
+//    color: white;
+//  }
+//}
+
 
 
 .core-page-heading{

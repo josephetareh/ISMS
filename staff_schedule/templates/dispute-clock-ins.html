@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load staffschedule_extras %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Clock Ins Dispute{% endblock %}
+
+{% block content %}
+    <div id="user-content">
+        <div id="clock-ins-dispute">
+            <section id="header-content"
+                     class="header-content pb-10 px-9 sub-page-divider">
+                 <div
+                        class="d-flex flex-row pointer pt-10 align-items-center"
+                        hx-post="{% url 'schedule:clock-in' %}"
+                        hx-select="#user-content"
+                        hx-target="#user-content"
+                        hx-swap="outerHTML"
+                        hx-push-url="true"
+                        id="back-button"
+                >
+                     <span class="material-symbols-outlined md-24 md-grey">arrow_back</span>
+                    <span class="subtext-shade regular zero-point-eight-seven-five-root">Back to Clock Ins</span>
+                 </div>
+
+                <h1 class="sub-core-heading mt-7">Dispute Clock Ins</h1>
+                <span class="mt-2 core-content-subheading">
+                    iSweat Fitness understands that various situations may stop you from clocking in on time.
+                    Use our dispute system to remove a late clock in from your file.
+                </span>
+                <div class="mt-10 thin">
+                    {% with total=clock_ins_to_dispute.count %}
+                        Disputing {{ total }} Clock In{{ total|pluralize }}
+                    {% endwith %}
+                </div>
+                <div class="mt-6 light w-100 warning zero-point-eight-seven-five-root py-6 px-6">
+                    Please note that clock ins may only be disputed once. Once you submit a dispute, the system will mark the clock in as disputed,
+                    and you will not be able to dispute that clock in entry in the future. Be sure you have all the necessary evidence to back your
+                    claim before submitting your dispute.
+                </div>
+            </section>
+
+            <section id="dispute-content" class="px-9 pt-10 mb-10">
+                {% for clock_in in clock_ins_to_dispute %}
+                    <div class="d-flex flex-column">
+                        {% if forloop.counter == 1 %}
+                            <div class="pt-10 extra-light subtext-shade">Dispute {{ forloop.counter|apnumber|capfirst }}</div>
+                        {% else %}
+                            <div class="pt-11 extra-light subtext-shade">Dispute {{ forloop.counter|apnumber|capfirst }}</div>
+                        {% endif %}
+                        <div class="extra-light zero-point-eight-seven-five-root lighter-grey mt-5 mb-9">
+                            You had a {{ clock_in.shift_starts | date:"h:i A"}} shift on the {{ clock_in.shift_starts | date:"jS" }}
+                            of {{ clock_in.shift_starts | date:"F" }}, where the clock in opened at {{ clock_in.shift_starts | get_clock_in_opening | date:"h:i A" }}.
+                            However, you did not clock in until {{ clock_in.time_clocked_in | date:"h:i A" }}, which resulted in a
+                            <span class="failure-text medium"> {{ clock_in.deduction }} NGN</span>. Please explain the reason for this in your dispute.
+                        </div>
+                        <form
+                                hx-post="{% url 'schedule:log-dispute' clock_in.id %}"
+                                hx-select="#dispute-description"
+                                hx-vals='{"sending-form-data": "true"}'
+                                hx-encoding='multipart/form-data'
+                                id="dispute-form-{{ forloop.counter0 }}"
+                        >
+                        {% for field in form %}
+                            {{ field }}
+                        {% endfor %}
+                        <div class="error w-100 py-6 px-6 light zero-point-eight-seven-five-root mt-3 d-none" id="file-upload-warning-{{ forloop.counter0 }}"></div>
+                        <div class="d-flex flex-row flex-wrap align-items-center" id="uploaded-files-{{ forloop.counter0 }}">
+
+                        </div>
+                        <div class="d-flex flex-row mt-9">
+                            <label for="dispute-file-field-{{ forloop.counter0 }}"
+                                   class="btn-alt-ghost medium d-flex flex-row align-items-center justify-content-center zero-point-eight-seven-five-root py-5 px-7 pointer">
+                            <span class="material-symbols-outlined md-24 me-2">cloud_upload</span>
+                            <span>Add Supporting Files</span>
+                            <input
+                                    type="file" name="file_field" id="dispute-file-field-{{ forloop.counter0 }}" multiple
+                                    accept="image/gif, image/jpeg, image/png, image/svg+xml, application/pdf, audio/mpeg, video/mp4"
+                            >
+                            </label>
+                            <button type="submit"
+                                    class="btn-core-ghost zero-point-eight-seven-five-root py-5 px-7 ms-4"
+                                    id="submit-button-{{ forloop.counter0 }}"
+                            >Dispute Clock In</button>
+                        </div>
+                        </form>
+                    </div>
+                {% endfor %}
+            </section>
+        </div>
+    <script src="{% static 'js/clock_ins_view/disputeFileHandler.js' %}" defer></script>
+
+    </div>
+{% endblock %}

@@ -5,21 +5,24 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, permission_required
+from django.db import transaction
 from django.db.models import Count, Q
+from django.forms import modelform_factory, modelformset_factory
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.utils import timezone
 from environ import environ
 from haversine import haversine, Unit
 
-from staff_schedule.models import Event, Shift, ClockIn
+from staff_schedule.forms import DisputeForm, DisputeAttachmentForm
+from staff_schedule.models import Event, Shift, ClockIn, Dispute, DisputeAttachment
 
 env = environ.Env()
 
 
 @login_required()
-def personal_schedule(request, schedule_weekday: str = None, activity: str = None):
+def personal_schedule_pass(request, schedule_weekday: str = None, activity: str = None):
     """
     :param request: django request object
     :param schedule_weekday: the current schedule weekday that the viewer is viewing provided as a string
@@ -75,6 +78,49 @@ def personal_schedule(request, schedule_weekday: str = None, activity: str = Non
 
 
 @login_required()
+def personal_schedule(request):
+    context = {}
+    if request.GET:
+        activity_type = request.GET.get("activity")
+        schedule_weekday = request.GET.get("weekday")  # int value
+
+        schedule_weekday = timezone.now().weekday() if schedule_weekday is None else int(schedule_weekday)
+        context['schedule_weekday'] = schedule_weekday
+        context['schedule_weekday_string'] = calendar.day_name[context['schedule_weekday']]
+
+        if activity_type is None or activity_type == "ALL":
+            activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
+                                              event_day__day=schedule_weekday). \
+                select_related("type", "location", "event_day")
+            activity_type = "ALL"
+        else:
+            activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
+                                              event_day__day=schedule_weekday,
+                                              type__type=activity_type).select_related("type", "location", "event_day")
+        context['activity_type'] = activity_type
+        context['activities'] = activities
+    else:
+        schedule_weekday = timezone.now().weekday()
+        activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
+                                          event_day__day=schedule_weekday, ) \
+            .select_related("type", "location", "event_day")
+        context['activity_type'] = "ALL"
+        context['activities'] = activities
+        context['schedule_weekday'] = schedule_weekday
+        context['schedule_weekday_string'] = calendar.day_name[context['schedule_weekday']]
+
+    date_shifter = deque([0, 1, 2, 3, 4, 5, 6])
+    # rotate function here to always ensure that the first date on our deque is the current weekday
+    date_shifter.rotate(0 - schedule_weekday)
+
+    context['deque_of_days'] = date_shifter
+    context['previous_day'] = date_shifter[6]
+    context['next_day'] = date_shifter[1]
+    print(activities)
+    return render(request, "personal-schedule.html", context)
+
+
+@login_required()
 def update_shifts():
     # todo: add role requirements to this
     pass
@@ -92,16 +138,35 @@ def clock_in(request):
     context = {}
     current_time = timezone.now()
     current_month = current_time.month
-    clock_ins_this_month = ClockIn.objects.annotate(monthly_count=Count('time_clocked_in')) \
-        .filter(time_clocked_in__month=current_month, shift__staff_on_shift=request.user)
-    context['monthly_clockin_count'] = clock_ins_this_month[0].monthly_count if clock_ins_this_month.count() > 0 else 0
-    context['total_clock_in_count'] = ClockIn.objects.filter(shift__staff_on_shift=request.user,
-                                                             time_clocked_in__isnull=False).count()
+    clock_ins_this_month = ClockIn.objects.filter(
+        time_clocked_in__month=current_month, shift__staff_on_shift=request.user
+    )
+    all_clock_ins = ClockIn.objects.filter(shift__staff_on_shift=request.user,
+                                           time_clocked_in__isnull=False)
+    context['month_clock_ins'] = clock_ins_this_month
+    context['all_clock_ins'] = all_clock_ins
 
-    all_clock_ins = ClockIn.objects.filter(shift__staff_on_shift=request.user, shift_ends__gte=timezone.now()). \
-        select_related('shift'). \
-        order_by('shift_starts')
-    next_clock_in = all_clock_ins.first()
+    # early and late clock in count:
+    late_clock_ins = all_clock_ins.filter(status="LTE").count()
+    context['late_clock_ins'] = late_clock_ins if late_clock_ins > 0 else 0
+    early_clock_ins = all_clock_ins.filter(status="EA").count()
+    context['early_clock_ins'] = early_clock_ins if early_clock_ins > 0 else 0
+
+    # dispute count:
+    pending_disputes = all_clock_ins.filter(status="DSP").count()
+    context['pending_disputes'] = pending_disputes if pending_disputes > 0 else 0
+    successful_disputes = all_clock_ins.filter(status="DSPS").count()
+    context['successful_disputes'] = successful_disputes if successful_disputes > 0 else 0
+    unsuccessful_disputes = all_clock_ins.filter(status="DSPF").count()
+    context['unsuccessful_disputes'] = unsuccessful_disputes if unsuccessful_disputes > 0 else 0
+    all_disputes = unsuccessful_disputes + successful_disputes + pending_disputes
+    context['all_disputes'] = all_disputes
+
+    next_clock_ins_registered = \
+        ClockIn.objects.filter(shift__staff_on_shift=request.user, shift_ends__gte=timezone.now()
+                               ).select_related('shift').order_by('shift_starts')[:7]
+    next_clock_in = next_clock_ins_registered.first()
+    context["registered_clock_ins"] = next_clock_ins_registered
 
     if next_clock_in:
         time_to_open = next_clock_in.shift_starts - datetime.timedelta(minutes=40)
@@ -219,10 +284,7 @@ def clock_ins_for_current_month(request, month_query, year_query):
         next_year = next_month_data.year
         next_button_status = ""
 
-    try:
-        all_clock_ins_count = month_clock_ins[0].monthly_count
-    except IndexError:
-        all_clock_ins_count = 0
+    all_clock_ins_count = month_clock_ins.count()
 
     context = {
         "month_clock_ins": month_clock_ins,
@@ -241,6 +303,19 @@ def clock_ins_for_current_month(request, month_query, year_query):
     return render(request, "clock-ins-this-month.html", context)
 
 
+@login_required()
+def total_clock_ins(request):
+    all_clock_ins = ClockIn.objects.filter(shift__staff_on_shift=request.user, time_clocked_in__isnull=False)
+    early_clock_ins = all_clock_ins.filter(status="EA")
+    late_clock_ins = all_clock_ins.filter(status="LTE")
+    context = {
+        "total_clock_ins": all_clock_ins,
+        "early_clock_ins": early_clock_ins,
+        "late_clock_ins": late_clock_ins
+    }
+    return render(request, "total-clock-ins.html", context)
+
+
 def clock_in_insights(request, clock_in_id):
     staff_clock_in = ClockIn.objects.filter(id=clock_in_id).select_related('shift').first()
     if staff_clock_in.shift.staff_on_shift != request.user:
@@ -250,8 +325,54 @@ def clock_in_insights(request, clock_in_id):
 
 
 def dispute_clock_in(request):
-    test_string = "65, 65, 55, 33"
-    print(test_string.split(","))
+    clock_ins_to_dispute = None
+    try:
+        if request.GET.get("dispute-ids"):
+            undisputable_clock_ins = ["EA", "CLSD", "EA", "DSP", "DSPF", "DSPS"]
+            dispute_ids_as_array = request.GET.get("dispute-ids").split(",")
+            clock_ins_to_dispute = ClockIn.objects.filter(id__in=dispute_ids_as_array).select_related(
+                'dispute').exclude(status__in=undisputable_clock_ins)
+    except AttributeError:
+        raise Http404("Cannot Find any Disputes to Resolve")
 
-    print(request.POST.get("dispute-ids"))
-    return render(request, "dispute-clock-ins.html")
+    form = DisputeForm()
+    file_upload = DisputeAttachmentForm()
+
+    context = {
+        "clock_ins_to_dispute": clock_ins_to_dispute,
+        "form": form,
+        "file_upload": file_upload
+    }
+    return render(request, "dispute-clock-ins.html", context)
+
+
+def log_dispute(request, clock_in_id):
+    if request.POST and request.POST.get("sending-form-data"):
+        form = DisputeForm(request.POST, request.FILES)
+        files = request.FILES.getlist('file_field')
+        print(files)
+        if form.is_valid():
+            dispute_data = form.save(commit=False)
+            try:
+                with transaction.atomic():
+                    clock_in_disputed = ClockIn.objects.get(id=int(clock_in_id))
+                    dispute_data.clock_in = clock_in_disputed
+                    description = form.cleaned_data["dispute_description"]
+                    dispute_data.save()
+                    for file in files:
+                        DisputeAttachment.objects.create(
+                            document=file, dispute=dispute_data
+                        )
+                    context = {
+                        "dispute_description": description,
+                    }
+                return render(request, "partials/dispute-succeeded.html", context)
+            except ClockIn.DoesNotExist:
+                messages.error(request, "Unfortunately, the system could not dispute this clock in. "
+                                        "Kindly report this issues to the administrator if this issue persists.")
+                raise Http404("The System Could Not Log This Clock In")
+        else:
+            form = DisputeForm()
+            # todo: partial for when the form is invalid
+            messages.error(request, "Your Dispute Could Not Be Submitted")
+            Http404("The System could not log this clock in")

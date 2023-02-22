@@ -24,6 +24,7 @@ $test-black: #000000;
 // text colours:
 $core-text-colour: #FDFDFF;
 $core-subtext-colour: #646569;
+$lighter-grey: #BFBFBF;
 $success-text-colour: #21D59B;
 $alt-green-component-colour: #06D6A0;
 $failure-text-colour: #D52941;
@@ -48,6 +49,9 @@ $opaque-card-icon-colour: #555555;
 $themes: (
   purple: (
     primary: #876AD7, secondary: hsla(256, 58%, 63% , 0.3)
+  ),
+  orange: (
+    primary: #C42E12
   )
 );
 

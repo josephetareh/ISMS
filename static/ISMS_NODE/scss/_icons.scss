@@ -18,6 +18,13 @@
 .material-symbols-outlined.md-red { color: $failure-text-colour; }
 .material-symbols-outlined.md-blue {color: $core-blue-colour; }
 .material-symbols-outlined.md-orange {color: $pending-text-colour; }
+
+.material-symbols-outlined.bordered-red{
+  background-color: #C43B46;
+  border-radius: 100%;
+  color: $default-white;
+}
+
 .material-symbols-outlined.icon-flip {
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1)

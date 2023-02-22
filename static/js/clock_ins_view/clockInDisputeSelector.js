@@ -38,4 +38,5 @@ function clockInDisputeSelectorHandling(){
         })
     }
 }
-clockInDisputeSelectorHandling()
+clockInDisputeSelectorHandling();
+

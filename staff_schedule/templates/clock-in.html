@@ -63,7 +63,11 @@
                                     id="clock-in-button"
                                     onclick="getClockInLatLong()"
                                     data-button-status= "{{ clock_in_button_info.1 }}"
-                                    jx-post="{% url 'schedule:log-cock-in' active_clock_in.id %}"
+                                    {% if active_clock_in %}
+                                        jx-post="{% url 'schedule:log-clock-in' active_clock_in.id %}"
+                                    {% else %}
+                                        jx-post=""
+                                    {% endif %}
 
                             >Begin Clock In</button>
                         </div>
@@ -83,33 +87,33 @@
                         you make while at iSweat Fitness</div>
 
                     <section class="text-center">
-                        <section class="row g-0 mt-6" id="clock-in-details">
-                            <div
-                                    class="col-5 opaque-board pointer"
-                                    hx-post="{% url 'schedule:month-clock-ins' current_time|date:"n" current_time|date:"o" %}"
-                                    hx-swap="outerHTML"
-                                    hx-select="#user-content"
-                                    hx-target="#user-content"
-                                    hx-push-url="true"
-                            >
+                        <section
+                                class="row g-0 mt-6"
+                                id="clock-in-details"
+                                hx-boost="true"
+                                hx-swap="outerHTML"
+                                hx-select="#user-content"
+                                hx-target="#user-content"
+                                hx-push-url="true">
+                            <a href="{% url 'schedule:month-clock-ins' current_time|date:"n" current_time|date:"o" %}" class="col-5 opaque-board">
                                 <span class="material-symbols-outlined md-36 md-grey mt-6">history</span>
                                 <div class="semi-bold mt-4">Clock Ins This Month</div>
-                                <div class="semi-bold triple-root">{{ monthly_clockin_count }}</div>
+                                <div class="semi-bold triple-root">{{ month_clock_ins.count }}</div>
                                 <div class="regular subtext-shade zero-point-seven-five-root mb-6">Clock Ins</div>
-                            </div>
+                            </a>
 
-                            <div class="col-5 opaque-board ms-7">
-                                <span class="material-symbols-outlined md-36 md-grey mt-6">history</span>
+                            <a href="{% url 'schedule:total-clock-ins' %}" class="col-5 opaque-board ms-7">
+                                 <span class="material-symbols-outlined md-36 md-grey mt-6">history</span>
                                 <div class="semi-bold mt-4">Total Clock Ins</div>
-                                <div class="semi-bold triple-root">{{ total_clock_in_count }}</div>
+                                <div class="semi-bold triple-root">{{ all_clock_ins.count }}</div>
                                 <div class="regular subtext-shade zero-point-seven-five-root mb-6">Clock Ins</div>
-                            </div>
+                            </a>
+
 
                             <div class="col-5 opaque-board mt-7">
                                 <span class="material-symbols-outlined md-36 md-grey mt-6">hourglass_top</span>
                                 <div class="semi-bold mt-4">Early Clock Ins</div>
-                                {# todo: remove placeholder #}
-                                <div class="semi-bold triple-root">2</div>
+                                <div class="semi-bold triple-root">{{ early_clock_ins }}</div>
                                 <div class="regular subtext-shade zero-point-seven-five-root mb-6">Times</div>
                                 <div class="mb-10 d-flex align-items-center justify-content-center">
                                     <span class="material-symbols-outlined md-36 md-green">arrow_upward</span>
@@ -120,8 +124,7 @@
                             <div class="col-5 opaque-board ms-7 mt-7">
                                 <span class="material-symbols-outlined md-36 md-grey mt-6">hourglass_bottom</span>
                                 <div class="semi-bold mt-4">Late Clock Ins</div>
-                                {# todo: remove placeholder #}
-                                <div class="semi-bold triple-root">2</div>
+                                <div class="semi-bold triple-root">{{ late_clock_ins }}</div>
                                 <div class="regular subtext-shade zero-point-seven-five-root mb-6">Times</div>
                                 <div class="mb-10 d-flex align-items-center justify-content-center">
                                     <span class="material-symbols-outlined md-36 md-red">arrow_downward</span>
@@ -130,48 +133,89 @@
                             </div>
                         </section>
                     </section>
+
+                    <header class="core-general-heading mt-10">Dispute Details</header>
+                    <span class="mt-2 mb-5 core-content-subheading">
+                        ISMS keeps a log of every clock in that you make while at iSweat Fitness
+                    </span>
+
+                    <section
+                            id="dispute-details"
+                            hx-boost="true"
+                            hx-swap="outerHTML"
+                            hx-select="#user-content"
+                            hx-target="#user-content"
+                            class="text-center row g-0 mt-6">
+                        <a href="" class="col-5 opaque-board">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">pause_circle</span>
+                                <div class="semi-bold mt-4">Pending Disputes</div>
+                                <div class="semi-bold triple-root">{{ pending_disputes }}</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Disputes</div>
+                        </a>
+
+                        <a href="" class="col-5 opaque-board ms-7">
+                            <span class="material-symbols-outlined md-36 md-grey mt-6">contact_support</span>
+                            <div class="semi-bold mt-4">Total Disputes</div>
+                            <div class="semi-bold triple-root">{{ all_disputes }}</div>
+                            <div class="regular subtext-shade zero-point-seven-five-root mb-6">Disputes</div>
+                        </a>
+
+                        <a href="" class="col-5 opaque-board mt-7">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">sentiment_very_satisfied</span>
+                                <div class="semi-bold mt-4">Successful Disputes</div>
+                                <div class="semi-bold triple-root">{{ successful_disputes }}</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Disputes</div>
+                                <div class="mb-10 d-flex align-items-center justify-content-center">
+                                    <span class="material-symbols-outlined md-36 md-green">arrow_upward</span>
+                                    <div class="semi-bold root-size success-text">15 times this month</div>
+                                </div>
+                        </a>
+
+                        <a href="" class="col-5 opaque-board mt-7 ms-7">
+                                <span class="material-symbols-outlined md-36 md-grey mt-6">sentiment_extremely_dissatisfied</span>
+                                <div class="semi-bold mt-4">Unsuccessful Disputes</div>
+                                <div class="semi-bold triple-root">{{ unsuccessful_disputes }}</div>
+                                <div class="regular subtext-shade zero-point-seven-five-root mb-6">Disputes</div>
+                                <div class="mb-10 d-flex align-items-center justify-content-center">
+                                    <span class="material-symbols-outlined md-36 md-green">arrow_upward</span>
+                                    <div class="semi-bold root-size success-text">15 times this month</div>
+                                </div>
+                        </a>
+                    </section>
                 </div>
 
 
                 <div class="d-flex flex-column ps-7 pt-10">
-                     <h2 class="core-page-side-heading mb-0">Personal Rota</h2>
-                    <div class="mt-2 core-content-subheading">Your Personal Rota Displays all
-                        the Times You Are Expected at Work</div>
+                     <h2 class="core-page-side-heading mb-0"> Next Clock Ins</h2>
+                    <div class="mt-2 core-content-subheading">Here are the Next 7 Clock Ins That You Will Need to Make at iSweat Fitness.</div>
 
-                    <div class="core-general-heading mt-10">Your Shifts</div>
-                    <div class="mt-2 mb-6 core-content-subheading">Your Shifts Display the Times You are Expected to Clock In </div>
+                    <div class="core-general-heading mt-10">Your Clock Ins</div>
+                    <div class="mt-2 mb-6 core-content-subheading">This Displays the Times You are Expected to Clock In </div>
 
-                    <section class="mt-6">
-                            {% for clock_in in all_clock_ins %}
-                                <div class="d-flex flex-row align-items-center">
-                                    <div class="d-flex flex-column">
-                                         <div class="date-header py-2 zero-point-seven-five-root px-8">
-                                             {{ clock_in.shift_starts | date:"D" }}
-                                        </div>
-                                        <div class="date-footer py-3 px-4 one-point-five-root text-center">
-                                            {{ clock_in.shift_starts | date:"d" }}
-                                        </div>
+                    <section id="next-clock-ins">
+                            {% for clock_in in registered_clock_ins %}
+                                <section class="d-flex flex-row align-items-center mt-6" id="registered-clock-in-date-{{ forloop.counter0 }}">
+                                    <div class="d-flex flex-column align-items-center">
+                                        <div class="date-header py-1 zero-point-eight-seven-five-root px-7 w-100">{{ clock_in.shift_starts | date:"D" }}</div>
+                                        <div class="date-footer py-3 px-3 one-point-five-root text-center w-100">{{ clock_in.shift_starts | date:"d" }}</div>
                                     </div>
                                     <div class="one-point-one-two-five-root thin ms-4">
                                         {{ clock_in.shift_starts | date:"F" }}
                                     </div>
-                                </div>
-
-                                <div class="clock-in-board mt-7 ps-7">
-                                    <span class="material-symbols-outlined md-36 md-grey mt-9">schedule</span>
-                                    <div class="semi-bold subtext-shade one-point-one-two-five-root">Shift Time</div>
-                                    <div class="d-flex flex-row mt-6 alt-fnt alt-fnt-medium double-root align-items-center">
-                                        <span>{{ clock_in.shift_starts | date:"H:i" }}</span>
-                                        <span class="material-symbols-outlined md-36 md-grey mx-2">trending_flat</span>
-                                        <span>{{ clock_in.shift_ends | date:"H:i" }}</span>
-                                    </div>
-                                    <div class="mt-2 mb-9 zero-point-eight-seven-five-root subtext-shade">
-                                        Clock in opens at {{ clock_in.shift_starts|get_clock_in_opening|date:"H:i" }}
-                                    </div>
-                                </div>
+                                </section>
+                                <section class="clock-in-board mt-7 ps-7" id="registered-clock-in-shift-info-{{ forloop.counter0 }}">
+                                        <span class="material-symbols-outlined md-36 md-grey mt-9">schedule</span>
+                                        <div class="semi-bold subtext-shade one-point-one-two-five-root">Shift Time</div>
+                                        <div class="d-flex flex-row mt-6 alt-fnt-medium double-root align-items-center">
+                                            <span>{{ clock_in.shift_starts | date:"H:i" }}</span>
+                                            <span class="material-symbols-outlined md-36 md-grey mx-2">trending_flat</span>
+                                            <span>{{ clock_in.shift_ends | date:"H:i" }}</span>
+                                        </div>
+                                        <div class="mt-2 mb-9 zero-point-eight-seven-five-root subtext-shade">
+                                            Clock in opens at {{ clock_in.shift_starts|get_clock_in_opening|date:"H:i" }}
+                                        </div>
+                                    </section>
                             {% endfor %}
-
-
                     </section>
                 </div>
             </div>

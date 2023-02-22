@@ -1,57 +1,128 @@
 {% extends 'base.html' %}
+{% load static %}
 {% load staffschedule_extras %}
 
 {% block content %}
-    <h1>Your Schedule</h1>
+    <div id="user-content" class="mb-10">
+        <main id="staff-schedule">
+            <section class="sub-page-divider px-9 pb-10">
+                <header class="d-flex flex-column pe-7 my-10">
 
-    <div id="date-control" hx-swap-oob="true">
-        {% if activity is None %}
-            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:-1 %}" hx-push-url="true"
-                    hx-vals='{"date-shift": "previous"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
-            >{{ date_shifter|get_date_as_string:-1 }}</button>
-            <div>{{ date_viewing }}</div>
-            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:1 %}" hx-push-url="true"
-                hx-vals='{"date-shift": "next"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
-            >{{ date_shifter|get_value_from_index:1|get_value_from_index:0 }}</button>
+                    <div class="d-flex flex-row align-items-baseline">
+                        <h1 class="core-page-side-heading mb-0">Your Schedule</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-2">event_upcoming</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">
+                        Your schedule provides details of all the activities that you will need to carry out while at the gym.
+                        You can also view the full iSweat Fitness rota here.</div>
+                </header>
 
-        {% else %}
+                <section id="activity-selection" class="d-flex flex-row" onload="personalScheduleHandler()">
+                    {# todo: roles settings here #}
+                    <button
+                            id="all-activities-button"
+                            class="activity-buttons py-4 px-7"
+                            hx-get="{% url 'schedule:personal-schedule' %}"
+                            hx-vals='{"weekday": "{{ schedule_weekday}}", "activity": "ALL"}'
+                            hx-select="#user-activities"
+                            hx-target="#user-activities"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                    >All Activities</button>
+                    {% if request.user|has_group:"Trainer" %}
+                        <button
+                                id="class-list-button"
+                                class="activity-buttons py-4 px-7 ms-2"
+                                hx-get="{% url 'schedule:personal-schedule' %}"
+                                hx-vals='{"weekday": "{{ schedule_weekday}}", "activity": "CS"}'
+                                hx-select="#user-activities"
+                                hx-target="#user-activities"
+                                hx-swap="outerHTML"
+                                hx-push-url="true"
+                        >Classes</button>
+                    {% endif %}
+                    <button
+                            id="meeting-list-button"
+                            class="activity-buttons py-4 px-7 ms-2"
+                            hx-get="{% url 'schedule:personal-schedule' %}"
+                            hx-vals='{"weekday": "{{ schedule_weekday}}", "activity": "MT"}'
+                            hx-select="#user-activities"
+                            hx-target="#user-activities"
+                            hx-swap="outerHTML"
+                            hx-push-url="true"
+                    >Meetings</button>
+                    {% if request.user|has_group:"Trainer" %}
+                        <button
+                                id="personal-training-list-button"
+                                class="activity-buttons py-4 px-7 ms-2"
+                                hx-get="{% url 'schedule:personal-schedule' %}"
+                                hx-vals='{"weekday": "{{ schedule_weekday}}", "activity": "PT"}'
+                                hx-select="#user-activities"
+                                hx-target="#user-activities"
+                                hx-swap="outerHTML"
+                                hx-push-url="true"
+                        >Personal Training</button>
+                    {% endif %}
+                </section>
+            </section>
 
-            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:-1 activity %}" hx-push-url="true"
-                    hx-vals='{"date-shift": "previous"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
-            >{{ date_shifter|get_date_as_string:-1 }}</button>
-            <div>{{ date_viewing }}</div>
-            <button hx-post="{% url 'schedule:personal-schedule' date_shifter|get_date_as_string:1 activity %}" hx-push-url="true"
-                hx-vals='{"date-shift": "next"}' hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML"
-            >{{ date_shifter|get_value_from_index:1|get_value_from_index:0 }}</button>
+        <section id="user-activities" class="px-9 mt-10">
+                <header class="d-flex flex-row justify-content-between align-items-center">
+                    <div class="alt-fnt triple-root alt-fnt-extra-light">{{ schedule_weekday_string }}</div>
+                    <div>
+                        <button
+                                class="material-symbols-outlined md-48 md-blue button icon-flip pointer"
+                                hx-get="{% url 'schedule:personal-schedule' %}"
+                                hx-vals='{"weekday": "{{ previous_day }}", "activity": "{{ activity_type }}"}'
+                                hx-swap="multi:#user-activities,#activity-selection:outerHTML"
+                                hx-push-url="true"
+                        >next_plan</button>
+                        <button
+                                class="material-symbols-outlined md-48 md-blue button pointer"
+                                hx-get="{% url 'schedule:personal-schedule' %}"
+                                hx-vals='{"weekday": "{{ next_day}}", "activity": "{{ activity_type }}"}'
+                                hx-swap="multi:#user-activities,#activity-selection:outerHTML"
+                                hx-push-url="true"
+                        >next_plan</button>
+                    </div>
+                </header>
 
-        {% endif %}
+                <section id="activity-list" class="mt-4 d-flex flex-column ms-auto me-auto col-6">
+                    {% for activity in activities %}
+                        <div class="transparent-board py-9 px-9 mt-7">
+                            <div class="one-point-one-two-five-root medium">{{ activity.event_name }}</div>
+                            <div class="row g-0 mt-6">
 
-    </div>
+                                <div class="col subtext-shade light one-point-one-two-five-root">
+                                    <div class="d-flex flex-row align-items-center">
+                                        <span class="material-symbols-outlined md-36 md-grey me-2">linear_scale</span>
+                                        <div>{{ activity.slug }}</div>
+                                    </div>
 
+                                    <div class="d-flex flex-row align-items-center mt-4">
+                                        <span class="material-symbols-outlined md-36 md-grey me-2">explore</span>
+                                        <div>{{ activity.location }}</div>
+                                    </div>
+                                </div>
 
+                                <div class="col-6 alt-fnt alt-fnt-medium one-point-five-root">
+                                    <div class="d-flex flex-row align-items-center justify-content-end">
+                                        <div class="success px-4 py-4">{{ activity.start_time | date:"H:i" }}</div>
+                                        <span class="material-symbols-outlined md-36 md-grey mx-2">trending_flat</span>
+                                        <div class="error px-4 py-4">{{ activity.end_time | date:"H:i" }}</div>
+                                    </div>
+                                </div>
 
-
-    <div id="date-information">
-
-        <button hx-post="{% url 'schedule:personal-schedule' date_viewing %}"
-            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
-        All Events
-        </button>
-        <button hx-post="{% url 'schedule:personal-schedule' date_viewing "Classes" %}"
-            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
-        Classes
-        </button>
-        <button hx-post="{% url 'schedule:personal-schedule' date_viewing "Meetings" %}"
-            hx-target="#date-information" hx-select="#date-information" hx-swap="outerHTML" hx-push-url="true">
-        Meetings
-        </button>
-
-        {% for event in events %}
-            {{ event.event_name }}
-            {{ event.type }}
-            {{ event.date }}
-            <br>
-        {% endfor %}
+                                <div
+                                        class="mt-8 medium zero-point-eight-seven-five-root {{ activity.type.type }}-syntax-highlight px-3 py-4 text-center"
+                                    >{{ activity.type }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </section>
+            </section>
+        </main>
+    <script src="{% static "js/personal_schedule_view/personalScheduleButtonHandler.js" %}" defer></script>
     </div>
 
 {% endblock %}

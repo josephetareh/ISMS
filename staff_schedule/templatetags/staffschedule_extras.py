@@ -30,3 +30,15 @@ def get_clock_in_opening(shift_start_time):
 @register.filter
 def subtract(first_value, second_value):
     return first_value - second_value
+
+
+@register.filter
+def one_return_test(counter_value):
+    print(counter_value)
+    # print("hi", counter_value.split("input"))
+    return 0
+
+
+@register.filter(name='has_group')
+def has_group(user, group_name):
+    return user.groups.filter(name=group_name).exists()

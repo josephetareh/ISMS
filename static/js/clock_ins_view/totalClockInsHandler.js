@@ -1,5 +1,6 @@
 function manipulateStatus(){
-    const status = document.getElementsByClassName("clock-in-table")
+    const status = document.getElementsByClassName("clock-in-table");
+    console.log("hello")
     for (const element of status){
         const statusIdentifier = element.getElementsByClassName('status-identifier')[0];
         const statusIcon = element.getElementsByClassName('status-icon-indicator')[0];
@@ -7,21 +8,21 @@ function manipulateStatus(){
         // todo: BEFORE PRODUCTION — OTHER ICONS
         switch (statusIdentifier.textContent) {
             case "LTE":
-                statusIcon.innerHTML = "cancel";
+                statusIcon.textContent = "cancel";
                 statusIcon.classList.add("md-red");
-                statusText.innerHTML = "Late";
+                statusText.textContent = "Late";
                 statusText.classList.add("failure-text");
                 break;
             case "EA":
-                statusIcon.innerHTML = "check_circle";
+                statusIcon.textContent = "check_circle";
                 statusIcon.classList.add("md-green");
-                statusText.innerHTML = "Early";
+                statusText.textContent = "Early";
                 statusText.classList.add("success-text");
                 break;
             case "DSP":
-                statusIcon.innerHTML = "pause_circle";
-                statusIcon.classList.add("md-green");
-                statusText.innerHTML = "Pending";
+                statusIcon.textContent = "pause_circle";
+                statusIcon.classList.add("md-orange");
+                statusText.textContent = "Pending";
                 statusText.classList.add("pending-text");
                 break;
         }

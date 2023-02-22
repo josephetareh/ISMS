@@ -55,7 +55,6 @@
 
   &:hover{
     background-color: $alt-green-component-colour;
-    border: transparent;
     color: $default-black;
   }
 }
@@ -91,5 +90,36 @@
     border: transparent;
     color: $default-black;
   }
+}
+
+.activity-buttons{
+  font-weight: $outfit-medium;
+  font-size: 0.875rem;
+  border-radius: 1.5625rem;
+  background-color: transparent;
+  @include theme using ($colors){
+    color: map-get($colors, primary);
+    border: 0.125rem solid map-get($colors, primary);
+  }
+
+  &:hover{
+    color: $default-white;
+    @include theme using($colors){
+      background-color: map-get($colors, primary);
+    }
+  }
+}
+
+.active-activity{
+    @include theme using($colors) {
+      color: $default-white;
+      background-color: map-get($colors, primary);
+    }
+}
+
+
+.btn-transparent{
+  background-color: transparent;
+  border: transparent;
 }
 

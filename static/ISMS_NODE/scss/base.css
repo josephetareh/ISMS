@@ -19291,6 +19291,14 @@ a:hover {
   text-decoration: none;
 }
 
+input[type=file] {
+  display: none;
+}
+
+input::file-selector-button {
+  display: None;
+}
+
 .core-page-heading {
   font-size: 3rem;
   font-weight: 600;
@@ -19389,6 +19397,12 @@ a:hover {
   color: #DB8B3B;
 }
 
+.material-symbols-outlined.bordered-red {
+  background-color: #C43B46;
+  border-radius: 100%;
+  color: #FFFFFF;
+}
+
 .material-symbols-outlined.icon-flip {
   -webkit-transform: scaleX(-1);
   transform: scaleX(-1);
@@ -19396,6 +19410,9 @@ a:hover {
 
 .theme-purple .material-symbols-outlined.themed-icon {
   color: #876AD7;
+}
+.theme-orange .material-symbols-outlined.themed-icon {
+  color: #C42E12;
 }
 
 .btn-clock-in {
@@ -19446,7 +19463,6 @@ a:hover {
 }
 .btn-alt-ghost:hover {
   background-color: #06D6A0;
-  border: transparent;
   color: #000000;
 }
 
@@ -19471,14 +19487,61 @@ a:hover {
   color: #000000;
 }
 
+.activity-buttons {
+  font-weight: 500;
+  font-size: 0.875rem;
+  border-radius: 1.5625rem;
+  background-color: transparent;
+}
+.theme-purple .activity-buttons {
+  color: #876AD7;
+  border: 0.125rem solid #876AD7;
+}
+.theme-orange .activity-buttons {
+  color: #C42E12;
+  border: 0.125rem solid #C42E12;
+}
+.activity-buttons:hover {
+  color: #FFFFFF;
+}
+.theme-purple .activity-buttons:hover {
+  background-color: #876AD7;
+}
+.theme-orange .activity-buttons:hover {
+  background-color: #C42E12;
+}
+
+.theme-purple .active-activity {
+  color: #FFFFFF;
+  background-color: #876AD7;
+}
+.theme-orange .active-activity {
+  color: #FFFFFF;
+  background-color: #C42E12;
+}
+
+.btn-transparent {
+  background-color: transparent;
+  border: transparent;
+}
+
 .opaque-board {
   background-color: #0E0F10;
   border-radius: 1.25rem;
 }
 
-.transparent-bord {
+.transparent-board {
   border: 0.125rem solid #0E0F10;
   border-radius: 1.25rem;
+}
+
+.mini-board {
+  border-radius: 0.3125rem;
+}
+
+.file-divider {
+  border-radius: 0.3125rem;
+  background-color: #0E0F10;
 }
 
 .single-page-divider {
@@ -19493,6 +19556,39 @@ a:hover {
   background-color: rgba(198, 42, 58, 0.06);
   color: #D52941;
   border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.warning {
+  background-color: rgba(208, 140, 73, 0.06);
+  color: #DB8B3B;
+  border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.success {
+  background-color: rgba(33, 212, 155, 0.06);
+  color: #21D59B;
+  border-radius: 0.3125rem;
+  line-height: 2rem;
+}
+
+.CS-syntax-highlight {
+  background-color: rgba(234, 57, 98, 0.1);
+  color: #EA3963;
+  border-radius: 4.25rem;
+}
+
+.MT-syntax-highlight {
+  background-color: rgba(135, 46, 245, 0.1);
+  color: #882FF5;
+  border-radius: 4.25rem;
+}
+
+.PT-syntax-highlight {
+  background-color: rgba(88, 41, 245, 0.1);
+  color: #5B2AF5;
+  border-radius: 4.25rem;
 }
 
 thead.subpage-table {
@@ -19569,6 +19665,20 @@ th:last-child {
   display: table-cell;
 }
 
+.text-form {
+  background-color: transparent;
+  color: #FFFFFF;
+  border: 0.125rem solid #0E0F10;
+  border-radius: 0.3125rem;
+  line-height: 200%;
+}
+.theme-purple .text-form:focus-visible {
+  outline: 0.125rem solid #876AD7;
+}
+.theme-orange .text-form:focus-visible {
+  outline: 0.125rem solid #C42E12;
+}
+
 .thin {
   font-weight: 100;
 }
@@ -19607,6 +19717,10 @@ th:last-child {
 
 .alt-fnt {
   font-family: paralucent-stencil, sans-serif;
+}
+
+.alt-fnt-extra-light {
+  font-weight: 200;
 }
 
 .alt-fnt-medium {
@@ -19663,6 +19777,10 @@ th:last-child {
 
 .subtext-shade {
   color: #646569;
+}
+
+.lighter-grey {
+  color: #BFBFBF;
 }
 
 .success-text {

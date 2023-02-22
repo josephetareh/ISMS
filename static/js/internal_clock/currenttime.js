@@ -20,16 +20,6 @@ function userTime() {
 userTime();
 
 
-
-// window.addEventListener('load', function (evt ){
-//     console.log("running this window event usertime ")
-//     console.log(evt.target.id)
-//
-//     userTime();
-//     manipulateClockInDateDisplay();
-// }, {once: true})
-//
-//
 document.getElementById('user-content').addEventListener('htmx:afterRequest', function(evt){
     if(document.getElementById("clock-ins")){
          userTime();

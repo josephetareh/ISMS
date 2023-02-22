@@ -40,6 +40,10 @@
   font-family: $alternative-font;
 }
 
+.alt-fnt-extra-light{
+  font-weight: $paralucent-extra-light;
+}
+
 .alt-fnt-medium{
   font-weight: $paralucent-medium;
 }
@@ -94,6 +98,10 @@
 
 .subtext-shade{
   color: #646569;
+}
+
+.lighter-grey{
+  color: $lighter-grey;
 }
 
 .success-text{
