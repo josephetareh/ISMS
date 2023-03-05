@@ -12,7 +12,7 @@ class CustomUserCreationForm(UserCreationForm):
 
     class Meta:
         model = CustomUser
-        fields = ('email', 'basic_hourly_wage', 'preferences')
+        fields = ('email', 'basic_hourly_wage', 'preferences', 'payment_per_class', "first_name", "last_name")
 
         widgets = {
             'preferences': JSONEditorWidget
@@ -22,7 +22,7 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(UserChangeForm):
     class Meta:
         model = CustomUser
-        fields = ('email', 'basic_hourly_wage', 'preferences')
+        fields = ('email', 'basic_hourly_wage', 'preferences', 'payment_per_class', "first_name", "last_name")
 
         widgets = {
             'preferences': JSONEditorWidget

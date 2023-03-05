@@ -42,3 +42,11 @@ def one_return_test(counter_value):
 @register.filter(name='has_group')
 def has_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
+
+
+# @register.filter(name='get_group')
+# def user_group(user):
+#     if user.groups:
+#         return user.groups.values_list('name', flat=True)
+#     else:
+#         return None

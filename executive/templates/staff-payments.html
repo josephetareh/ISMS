@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Staff Payments{% endblock %}
+
+{% block content %}
+    <div id="user-content" class="ms-9">
+        <main id="staff-payments">
+            <section class="mx-9 pb-10">
+                <header class="d-flex flex-column pe-7 my-10">
+
+                    <div class="d-flex flex-row align-items-center">
+                        <h1 class="core-page-heading mb-0">Staff Salary Payments</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-2">payments</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">
+                        This page allows you to view all pending payslips for your staff.
+                        Mark them as complete once you have made the payment.
+                    </div>
+                </header>
+
+                <section class="mt-10">
+                    <div class="d-flex flex-row">
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">S</span>TAFF
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">B</span>ASE WAGE
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">C</span>LASSES
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">D</span>EDUCTIONS
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">F</span>INAL <span class="root-size">P</span>AYMENT
+                        </div>
+                    </div>
+
+                    {% for payment in payments_list %}
+                        <div class="d-flex flex-row align-items-center sub-page-divider pb-7 mt-7" id="unpaid-payments-list-{{ forloop.counter0 }}">
+                            <div class="col-2">{{ payment.staff.first_name }}</div>
+                            <div class="col-2">{{ payment.total_clock_in_wage | intcomma}} NGN</div>
+                            <div class="col-2">{{ payment.total_class_payment | intcomma}} NGN</div>
+                            <div class="col-2 failure-text">{{ payment.deductions | intcomma }} NGN</div>
+                            <div class="col-2 success-text">{{ payment.final_payment | intcomma}} NGN</div>
+                            <button
+                                    id="confirm-payment-{{ payment.id }}"
+                                    type="submit"
+                                    class="btn-core-ghost zero-point-eight-seven-five-root py-5 px-7 ms-4"
+                                    hx-post="{% url 'executive:staff-payments' %}"
+                                    hx-vals='{"slip-id": "{{ payment.id }}"}'
+                                    hx-swap="outerHTML"
+                            >Mark as Complete</button>
+                        </div>
+                    {% endfor %}
+                </section>
+            </section>
+        </main>
+        <script src="{% static 'js/staff_payments/paymentsListener.js' %}" defer></script>
+    </div>
+    
+{% endblock %}

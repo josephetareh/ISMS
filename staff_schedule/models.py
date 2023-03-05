@@ -4,8 +4,11 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.db import models
+from django.db.models import Q
 from django.utils import timezone
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
+
+from payments.models import PaySlip
 
 
 class Location(models.Model):
@@ -62,7 +65,7 @@ class Event(models.Model):
     staff_working = models.ManyToManyField(settings.AUTH_USER_MODEL, through="EventPersonnel",
                                            through_fields=('event', 'staff_on_event'))
     event_day = models.ForeignKey(Weekday, null=False, on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=12,  blank=True, null=True)
+    slug = models.SlugField(max_length=12, blank=True, null=True)
 
     # positive integer field here to show how many times the event will be recurring for.
     # another field to say that the recurring of the event is true
@@ -90,6 +93,110 @@ class EventPersonnel(models.Model):
     def __str__(self):
         string_representation = "{} for {}"
         return string_representation.format(self.event, self.staff_on_event)
+
+
+class GroupClass(models.Model):
+    class_name = models.CharField(max_length=100, blank=False)
+    description = models.TextField(max_length=1000, blank=True)
+    trainer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+                                limit_choices_to={
+                                    "groups__name": "Trainer"
+                                })
+
+    def __str__(self):
+        return self.class_name
+
+
+class GroupClassPayment(models.Model):
+    payment_for_class = models.ForeignKey(GroupClass, on_delete=models.SET_NULL, null=True, blank=True)
+    attendees = models.PositiveIntegerField(default=0, blank=True, null=True)
+    attendance_logged = models.BooleanField(default=False)
+    payment_request_created = models.DateTimeField(auto_now_add=True)
+    time_of_payment = models.DateTimeField(null=True, blank=True)
+    class_paid_for = models.BooleanField(default=False)
+    total_payment = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
+    sent_for_payment = models.BooleanField(default=False)
+    payslip = models.ForeignKey(PaySlip, null=True, blank=True, on_delete=models.SET_NULL)
+
+
+class Meeting(models.Model):
+    meeting_title = models.CharField(max_length=100, blank=False)
+    description = models.TextField(max_length=3000, blank=False)
+    staff_attending = models.ManyToManyField(settings.AUTH_USER_MODEL)
+
+    def __str__(self):
+        return self.meeting_title
+
+
+class ISMSSchedule(models.Model):
+    RECURRING_CHOICES = [
+        ("DLY", "Daily"),
+        ("WKLY", "Weekly"),
+        ("MTH", "Monthly")
+    ]
+    EVENT_TYPES = [
+        ("CS", "Class"),
+        ("MT", "Meeting"),
+        ("PT", "Personal Training Session")
+    ]
+    WEEKDAYS = [
+        ("0", "Monday"),
+        ("1", "Tuesday"),
+        ("2", "Wednesday"),
+        ("3", "Thursday"),
+        ("4", "Friday"),
+        ("5", "Saturday"),
+        ("6", "Sunday")
+    ]
+    LOCATIONS = [
+        ("OF", "Office"),
+        ("MTA", "Multi-Tasking Area"),
+        ("SA", "Strength Area"),
+        ("ISMS", "ISMS Platform"),
+        ("CA", "Class Area")
+    ]
+    schedule_type = models.CharField(choices=EVENT_TYPES, max_length=2)
+    schedule_day = models.CharField(choices=WEEKDAYS, max_length=1)
+    group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, null=True, blank=True)
+    staff_meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, null=True, blank=True)
+    location = models.CharField(choices=LOCATIONS, max_length=4)
+    slug = models.SlugField(max_length=20, blank=True, null=True, unique=True)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+    recurring = models.BooleanField(default=False)
+    recurring_interval = models.CharField(
+        choices=RECURRING_CHOICES, max_length=4
+    )
+    recurring_count = models.PositiveIntegerField(default=0, blank=True, null=True)
+
+    def __str__(self):
+        if self.group_class:
+            return str(self.group_class)
+        elif self.staff_meeting:
+            return str(self.staff_meeting)
+        else:
+            return super().__str__()
+            # return super(ISMSSchedule, self).__str__()
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            super().save(*args, **kwargs)
+        # set the event type dynamically
+        if self.group_class:
+            self.schedule_type = "CS"
+        elif self.staff_meeting:
+            self.schedule_type = "MT"
+
+        self.slug = f"{self.schedule_type}-ID-{self.location}-{self.id}"
+
+        # todo: recurring functionality
+
+        # todo: validation rules:
+        #   — ensure that self.group_class and self.staff_meeting cannot be together
+        #   — ensure that the start_date and end_date are always the same date and it matches the weekday choice
+        #   — if the recurring interval has been set, then you must not be able to set a recurring schedule.
+        #   they are not compatible
+        super().save(*args, **kwargs)
 
 
 class Shift(models.Model):
@@ -150,6 +257,7 @@ class ClockIn(models.Model):
     payment_for_shift = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
     deduction = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
     final_payment = models.DecimalField(default=0.00, max_digits=12, decimal_places=2, blank=True, null=True)
+    payslip = models.ForeignKey(PaySlip, blank=True, null=True, on_delete=models.SET_NULL)
 
     def save(self, *args, **kwargs):
 
@@ -171,10 +279,12 @@ class ClockIn(models.Model):
 
         time_difference = self.shift_ends - self.shift_starts
         hours = divmod(time_difference.total_seconds(), 3600)
+        print("HI", hours)
         minute_payment_for_shift = 0
         hourly_payment_for_shift = Decimal(self.shift.staff_on_shift.basic_hourly_wage) * Decimal(hours[0])
         if hours[1] > 0:
-            minute_payment_for_shift = Decimal((hours[1] / 3600)) * self.shift.staff_on_shift.basic_hourly_wage
+            minute_payment_for_shift = Decimal((hours[1] / 60)) * self.shift.staff_on_shift.basic_hourly_wage
+        # todo: may want to round this down to the nearest whole number
         self.payment_for_shift = minute_payment_for_shift + hourly_payment_for_shift
 
         # set up for the periodic tasks:

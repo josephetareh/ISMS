@@ -90,11 +90,14 @@ function manipulateClockInDateDisplay(){
             clockInStatus.innerHTML = "Clock in Opens In"
             let currentTime = new Date()
             let timeUntilOpen = openingTime - currentTime;
+            console.log(timeUntilOpen)
             timeUntilOpen = timeUntilOpen / 1000;    //  converts timeUntilOpen from milliseconds to seconds
             let durationForClockInBeginning = totalDuration(timeUntilOpen)
+            console.log(durationForClockInBeginning)
 
             // find the first instance of time that is greater than 1:
             let currentTimeStatus = durationForClockInBeginning.find(item => item.totalTime >= 1)
+            console.log(currentTimeStatus)
             clockInTime.innerHTML = currentTimeStatus.totalTime
             currentTimeStatus.totalTime > 1
                 ? clockInIdentifier.innerHTML = currentTimeStatus.plural : clockInIdentifier.innerHTML = currentTimeStatus.singular;

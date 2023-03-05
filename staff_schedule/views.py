@@ -5,7 +5,7 @@ from decimal import Decimal
 
 from django.contrib import messages
 from django.contrib.auth import get_user_model
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.db import transaction
 from django.db.models import Count, Q
 from django.forms import modelform_factory, modelformset_factory
@@ -15,66 +15,11 @@ from django.utils import timezone
 from environ import environ
 from haversine import haversine, Unit
 
+from conf.url_tests import not_a_trainer_test, trainer_test
 from staff_schedule.forms import DisputeForm, DisputeAttachmentForm
-from staff_schedule.models import Event, Shift, ClockIn, Dispute, DisputeAttachment
+from staff_schedule.models import Event, Shift, ClockIn, Dispute, DisputeAttachment, ISMSSchedule, GroupClassPayment
 
 env = environ.Env()
-
-
-@login_required()
-def personal_schedule_pass(request, schedule_weekday: str = None, activity: str = None):
-    """
-    :param request: django request object
-    :param schedule_weekday: the current schedule weekday that the viewer is viewing provided as a string
-    :param activity: the current type of event activity that hte viewer is viewing
-    :return: django render object
-
-    this view works on providing the personal schedule to each staff member. when this view is loaded, each staff
-    it checks if a specific schedule weekday has been provided. in the case that this value has not been added,
-    the view will provide the events for the current day of the week for the user [monday events will be shown if the
-    page is visited on Monday, and so on].
-
-    alternatively, if a specific weekday has been provided, the view will set the schedule weekday number. this number
-    will be used for iterating and filtering.
-
-    the view also allows filtering by activity (personal training, meetings, etc.). if the user does not provide an
-    activity, then all activities for the specific day are displayed to the user. in the case that an activity is provided,
-    then the view will filter for events based on that activity.
-
-    the view also makes use of a deque data structure to rotate the dates, allowing the user to efficiently cycle to the
-    various activities that they have on different dates.
-    """
-    activities = None
-
-    # turn schedule to integer to allow it to deal with datetime objects:
-    if schedule_weekday is None:
-        # if there is no provided schedule date then the user should be viewing all events on the current date
-        schedule_weekday = timezone.now().weekday()
-        # rotate days to ensure that the current date is always going to be the first da
-    else:
-        # if a schedule has been provided,  the schedule date should match the corresponding database weekday choice
-        date_match_dictionary = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5,
-                                 "Sunday": 6}
-        schedule_weekday = date_match_dictionary[schedule_weekday.title()]
-
-    if activity is None:
-        activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user, event_day__day=schedule_weekday)
-    else:
-        activity_match_dictionary = {"Classes": "CS", "Meetings": "MT", "Personal Training": "PT"}
-        activity_choice = activity_match_dictionary[activity.title()]
-        activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user, event_day__day=schedule_weekday,
-                                          type__type=activity_choice)
-
-    # shift the dates accordingly to ensure that the day provided is always the current date in the date queue
-    date_handler = {"Monday": 0, "Tuesday": 1, "Wednesday": 2, "Thursday": 3, "Friday": 4, "Saturday": 5,
-                    "Sunday": 6}
-    date_shifter = deque(date_handler.items())
-    date_shifter.rotate(0 - schedule_weekday)
-    schedule_weekday = date_shifter[0][0]
-
-    context = {"events": activities, "date_viewing": schedule_weekday, "activity": activity,
-               "date_shifter": date_shifter}
-    return render(request, "personal-schedule.html", context)
 
 
 @login_required()
@@ -89,21 +34,24 @@ def personal_schedule(request):
         context['schedule_weekday_string'] = calendar.day_name[context['schedule_weekday']]
 
         if activity_type is None or activity_type == "ALL":
-            activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
-                                              event_day__day=schedule_weekday). \
-                select_related("type", "location", "event_day")
+            activities = ISMSSchedule.objects.filter(
+                Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
+                schedule_day=schedule_weekday,
+            ).select_related('staff_meeting', 'group_class').order_by("start_time")
             activity_type = "ALL"
         else:
-            activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
-                                              event_day__day=schedule_weekday,
-                                              type__type=activity_type).select_related("type", "location", "event_day")
+            activities = ISMSSchedule.objects.filter(
+                Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
+                schedule_day=schedule_weekday, schedule_type=activity_type
+            ).select_related('staff_meeting', 'group_class').order_by("start_time")
         context['activity_type'] = activity_type
         context['activities'] = activities
     else:
         schedule_weekday = timezone.now().weekday()
-        activities = Event.objects.filter(eventpersonnel__staff_on_event=request.user,
-                                          event_day__day=schedule_weekday, ) \
-            .select_related("type", "location", "event_day")
+        activities = ISMSSchedule.objects.filter(
+            Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
+            schedule_day=schedule_weekday,
+        ).select_related('staff_meeting', 'group_class').order_by("start_time")
         context['activity_type'] = "ALL"
         context['activities'] = activities
         context['schedule_weekday'] = schedule_weekday
@@ -118,6 +66,93 @@ def personal_schedule(request):
     context['next_day'] = date_shifter[1]
     print(activities)
     return render(request, "personal-schedule.html", context)
+
+
+@login_required()
+@user_passes_test(trainer_test)
+def class_details(request, class_name, class_identification, slug):
+    """
+    :param request:
+    :param class_name: the name of the class automatically generated in the URL but not used
+    :param class_identification:  the id of the class
+    :param slug: the aut-generated slug
+    :return: django request object
+    this view works by getting the requested class from the ISMS schedule table. one it has the class it then
+    attempts to determine if a payment request for the class in question has already been created. in order
+    to reduce the amount of data in the database tables, the schedule has been created programmatically,
+    which also means that this problem also has to be solved programmatically. unfortunately, the obvious
+    limitation at this time of writing is that class payment requests will only be able to crated on the day of
+    the class and after the class has ended.
+
+    the first core task that this view solves is that it tries to check if a payment request for a class has
+    already been created. as classes are a FK on the GroupClassPayment schedule, it attempts to use
+    the date to check if a GroupClassPayment has been made for a specific class has been made by a specific
+    trainer. this hereby works on the context that a trainer will never handle the same class twice in one day
+    i.e., a trainer will never take two HIITs classes in the same day.
+
+    if no GroupClassPayment object exists, then it is sets it to none, and then it checks if the current class that
+    is being viewed is being viewed on the same weekday is the same as the current time, and then checks if
+    the current time has passed the time that is being viewed is >= the class end time [this is to ensure that a
+    trainer will only ever be able to request a payment for a class until after its designated end time and not before]
+
+    the last core functionality is that if the system is able to find a GroupClassPayment for a specific class,
+    made on the same day, by the current trainer, then we can make a .99 assumption that the trainer has already
+    requested a payment in the past. so it sends a message to the trainer that a payment has already been made
+    for that class has been made, and then tells that if they did not perform this action, they should visit the front
+    desk.
+
+    while this is not necessarily a fool-proof implementation, I believe it is much better than the infinite amount of
+    database rows that would have to be created for each single class that is had on the gym. so, it is a positive tradeoff
+    """
+    class_viewing = ISMSSchedule.objects.get(
+        slug=slug,
+        id=int(class_identification),
+        group_class__trainer=request.user
+    )
+    context = {}
+    current_time = timezone.now()
+    can_end_class = False
+
+    try:
+        payment_request_for_class = GroupClassPayment.objects.get(
+            payment_for_class=class_viewing.group_class,
+            payment_for_class__trainer=request.user,
+            payment_request_created__day=current_time.day,
+            payment_request_created__month=current_time.month,
+            payment_request_created__year=current_time.year
+        )
+    except GroupClassPayment.DoesNotExist:
+        payment_request_for_class = None
+
+    if payment_request_for_class is None:
+        if class_viewing.end_time.weekday() == current_time.weekday() \
+                and current_time.hour >= class_viewing.end_time.hour \
+                and current_time.minute >= class_viewing.end_time.minute:
+            can_end_class = True
+
+        if request.method == "POST" and request.POST.get('request-payment'):
+            GroupClassPayment.objects.create(
+                payment_for_class=class_viewing.group_class,
+                sent_for_payment=True
+            )
+            messages.success(
+                request,
+                "Your payment request has been created. It will now be added to your next invoice"
+            )
+            can_end_class = False
+    else:
+        if class_viewing.end_time.weekday() == payment_request_for_class.payment_request_created.weekday():
+            messages.warning(
+                request,
+                "A payment for this class has already been made today. "
+                "This means that you cannot request a payment for this class until the next time "
+                "it appears on your schedule. Please visit the front desk if you believe that this "
+                "is an error."
+            )
+
+    context['class_details'] = class_viewing
+    context['can_end_class'] = can_end_class
+    return render(request, "class-details.html", context)
 
 
 @login_required()
@@ -347,7 +382,7 @@ def dispute_clock_in(request):
 
 
 def log_dispute(request, clock_in_id):
-    if request.POST and request.POST.get("sending-form-data"):
+    if request.method == "POST" and request.POST.get("sending-form-data"):
         form = DisputeForm(request.POST, request.FILES)
         files = request.FILES.getlist('file_field')
         print(files)

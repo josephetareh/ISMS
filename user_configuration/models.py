@@ -12,6 +12,7 @@ class CustomUser(AbstractUser):
     basic_hourly_wage = models.DecimalField(max_digits=10, decimal_places=2)
     core_colour = models.CharField(max_length=7, default="#876AD7", blank=True, null=False)
     preferences = models.JSONField(null=True)
+    payment_per_class = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     # REQUIRED_FIELDS
     # TODO: IN THE FUTURE, WE WILL NEED TO SET SOME REQUIRED_FIELDS FOR CREATING SUPERUSER
     # https://docs.djangoproject.com/en/4.1/topics/auth/customizing/#specifying-custom-user-model

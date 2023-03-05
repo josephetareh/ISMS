@@ -8,6 +8,9 @@ urlpatterns = [
     path("schedule/", include('staff_schedule.urls', namespace='schedule')),
     path('', include('user_configuration.urls', namespace='user_configuration')),
     path("my-tasks/", include('tasks.urls', namespace='my-tasks')),
+    path('front-desk/', include('frontdesk.urls', namespace='front-desk')),
+    path('executive/', include('executive.urls', namespace='executive')),
+    path("payments/", include('payments.urls', namespace="payments")),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 

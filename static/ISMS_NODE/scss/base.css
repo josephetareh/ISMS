@@ -19291,6 +19291,13 @@ a:hover {
   text-decoration: none;
 }
 
+input[type=number] {
+  background-color: transparent;
+  color: #FFFFFF;
+  border-radius: 0.3125rem;
+  border: 0.125rem solid #0E0F10;
+}
+
 input[type=file] {
   display: none;
 }
@@ -19465,6 +19472,15 @@ input::file-selector-button {
   background-color: #06D6A0;
   color: #000000;
 }
+.btn-alt-ghost:disabled {
+  opacity: 0.3;
+}
+.btn-alt-ghost:disabled:hover {
+  background-color: transparent;
+  border: #06D6A0 solid 0.0625rem;
+  border-radius: 0.3125rem;
+  color: #06D6A0;
+}
 
 .btn-clock-in-late {
   background-color: #D52941;
@@ -19552,6 +19568,10 @@ input::file-selector-button {
   border-bottom: 0.09375rem solid #0E0F10;
 }
 
+.spaced-text {
+  line-height: 3;
+}
+
 .error {
   background-color: rgba(198, 42, 58, 0.06);
   color: #D52941;
@@ -19579,10 +19599,22 @@ input::file-selector-button {
   border-radius: 4.25rem;
 }
 
+a.CS-syntax-highlight:hover {
+  color: #EA3963;
+  background-color: transparent;
+  border: rgba(234, 57, 98, 0.1) solid 0.125rem;
+}
+
 .MT-syntax-highlight {
   background-color: rgba(135, 46, 245, 0.1);
   color: #882FF5;
   border-radius: 4.25rem;
+}
+
+a.MT-syntax-highlight:hover {
+  color: #882FF5;
+  background-color: transparent;
+  border: rgba(135, 46, 245, 0.1) solid 0.125rem;
 }
 
 .PT-syntax-highlight {

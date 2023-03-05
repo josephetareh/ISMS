@@ -1,0 +1,67 @@
+ {% extends 'base.html' %}
+ {% load static %}
+
+{% block title %}Log Class Attendance{% endblock %}
+
+ {% block content %}
+     <div id="user-content" class="ms-9">
+        <main id="class-attendance">
+            <section class="px-9 pb-10">
+                <header class="d-flex flex-column pe-7 my-10">
+
+                    <div class="d-flex flex-row align-items-center">
+                        <h1 class="core-page-heading mb-0">Class Attendance</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-2">school</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">
+                        This page allows you to log all class attendances from recent classes</div>
+                </header>
+
+                <section class="mt-10">
+                    <div class="d-flex flex-row">
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">T</span>RAINER
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">C</span>LASS NAME
+                        </div>
+                        <div class="col-3 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">R</span>EQUEST <span class="root-size">T</span>IME
+                        </div>
+                        <div class="col-2 semi-bold zero-point-eight-seven-five-root subtext-shade">
+                            <span class="root-size">A</span>TTENDEES <span class="root-size">C</span>OUNT
+                        </div>
+                    </div>
+
+                    {% for unregistered_class in unregistered_classes %}
+                        {# todo: for responsive — check partials/post-log-class-attendance.html to ensure responsivity #}
+                        <div class="d-flex flex-row align-items-center sub-page-divider pb-7 mt-7" id="unregistered-class-details-{{ forloop.counter0 }}">
+                            <div class="col-2">{{ unregistered_class.payment_for_class.trainer }}</div>
+                            <div class="col-2">{{ unregistered_class.payment_for_class.class_name }}</div>
+                            <div class="col-3">{{ unregistered_class.payment_request_created | date:"l, jS F, Y" }}</div>
+                            <form
+                                id="unregistered-class-details-{{ unregistered_class.id }}"
+                                class="d-flex flex-row col-5 align-items-center"
+                                hx-boost="true"
+                                action="{% url 'front-desk:log-classes' %}"
+                                method="post"
+                                hx-target="#unregistered-class-details-{{ unregistered_class.id }}"
+                                hx-select="#unregistered-class-details-{{ unregistered_class.id }}"
+                                hx-swap="outerHTML"
+                                hx-vals='{"attendance-for": "{{ unregistered_class.id }}"}'
+                            >
+                                <label for="unregistered-class-{{ unregistered_class.id }}" class="d-none"></label>
+                                <input type="number" id="unregistered-class-{{ unregistered_class.id }}"
+                                       name="class-{{ unregistered_class.id }}" class="me-auto py-2 ps-3" value="1">
+                                <button
+                                        id="invoice-addition-{{ unregistered_class.id }}"
+                                        type="submit"
+                                        class="btn-core-ghost zero-point-eight-seven-five-root py-5 px-7 ms-4">Add to Payslip</button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </section>
+            </section>
+        </main>
+     </div>
+ {% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}My Earnings{% endblock %}
+
+{% block content %}
+    <div id="user-content" class="mb-10">
+        <main id="my-earnings">
+            <section class="sub-page-divider px-9 pb-10">
+                <header class="d-flex flex-column pe-7 mt-10">
+
+                    <div class="d-flex flex-row align-items-center">
+                        <h1 class="core-page-heading mb-0">My Earnings</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-2">payment</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">
+                        Your earnings page details all the payments that you have received from iSweat Fitness.
+                    </div>
+
+                    <div class="d-flex flex-row justify-content-between mt-10">
+                        <div class="success-text">
+                            <div>Total Payslips</div>
+                            <div class="quadruple-root medium">{{ total_payslips_count }}</div>
+                            <div class="subtext-shade zero-point-seven-five-root">From {{ first_payment.payment_confirmed | date:"jS, F o" }}
+                                to {{ last_payment.payment_confirmed | date:"jS, F o" }}</div>
+                        </div>
+
+                        <div class="success-text">
+                            <div>Total Payment</div>
+                            <div class="quadruple-root medium">{{ total_payment | intcomma }} NGN</div>
+                            <div class="subtext-shade zero-point-seven-five-root">From {{ first_payment.payment_confirmed | date:"jS, F o" }}
+                                to {{ last_payment.payment_confirmed | date:"jS, F o" }}</div>
+                        </div>
+                    </div>
+
+                </header>
+            </section>
+        </main>
+    </div>
+{% endblock %}

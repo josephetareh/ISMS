@@ -25,6 +25,10 @@
   border-bottom: .09375rem solid $opaque-card-background-colour;
 }
 
+.spaced-text{
+  line-height: 3;
+}
+
 .error{
   background-color: hsla(354, 65%, 47% , 0.06);
   color: $failure-text-colour;
@@ -52,10 +56,26 @@
   border-radius: 4.25rem;
 }
 
+a.CS-syntax-highlight{
+  &:hover{
+    color: #EA3963;
+    background-color: transparent;
+    border: hsla(346, 81%, 57% , 0.1) solid 0.125rem;
+  }
+}
+
 .MT-syntax-highlight{
   background-color: hsla(267, 91%, 57% , 0.1);
   color: #882FF5;
   border-radius: 4.25rem;
+}
+
+a.MT-syntax-highlight{
+    &:hover{
+    color: #882FF5;
+    background-color: transparent;
+    border: hsla(267, 91%, 57% , 0.1) solid 0.125rem;
+  }
 }
 
 .PT-syntax-highlight{

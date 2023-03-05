@@ -14,6 +14,7 @@ urlpatterns = [
     path("dispute-clock-ins/", views.dispute_clock_in, name="dispute-clock-ins"),
     path("log-dispute/<clock_in_id>", views.log_dispute, name="log-dispute"),
     path("all-clock-ins", views.total_clock_ins, name="total-clock-ins"),
+    path("class-details/<class_name>/<int:class_identification>/<slug:slug>/", views.class_details, name="class-details")
     # path('<schedule_weekday>/', views.personal_schedule, name="personal-schedule"),
     # path('<schedule_weekday>/<activity>', views.personal_schedule, name="personal-schedule"),
 

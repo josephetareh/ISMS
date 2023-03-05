@@ -19,6 +19,7 @@
 
                 <section id="activity-selection" class="d-flex flex-row" onload="personalScheduleHandler()">
                     {# todo: roles settings here #}
+                    {% with user_group=request.user|has_group:"Trainer" %}
                     <button
                             id="all-activities-button"
                             class="activity-buttons py-4 px-7"
@@ -29,7 +30,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                     >All Activities</button>
-                    {% if request.user|has_group:"Trainer" %}
+                    {% if user_group %}
                         <button
                                 id="class-list-button"
                                 class="activity-buttons py-4 px-7 ms-2"
@@ -51,7 +52,7 @@
                             hx-swap="outerHTML"
                             hx-push-url="true"
                     >Meetings</button>
-                    {% if request.user|has_group:"Trainer" %}
+                    {% if user_group %}
                         <button
                                 id="personal-training-list-button"
                                 class="activity-buttons py-4 px-7 ms-2"
@@ -63,6 +64,7 @@
                                 hx-push-url="true"
                         >Personal Training</button>
                     {% endif %}
+                    {% endwith %}
                 </section>
             </section>
 
@@ -87,10 +89,21 @@
                     </div>
                 </header>
 
-                <section id="activity-list" class="mt-4 d-flex flex-column ms-auto me-auto col-6">
+                <section id="confirm-requests">
+
+                </section>
+
+                <section id="activity-list"
+                         class="mt-4 d-flex flex-column ms-auto me-auto col-6"
+                         hx-target="#user-content"
+                         hx-select="#user-content"
+                         hx-swap="outerHTML"
+                         hx-boost="true"
+                         hx-push-url="true"
+                >
                     {% for activity in activities %}
                         <div class="transparent-board py-9 px-9 mt-7">
-                            <div class="one-point-one-two-five-root medium">{{ activity.event_name }}</div>
+                            <div class="one-point-one-two-five-root medium">{{ activity }}</div>
                             <div class="row g-0 mt-6">
 
                                 <div class="col subtext-shade light one-point-one-two-five-root">
@@ -101,7 +114,7 @@
 
                                     <div class="d-flex flex-row align-items-center mt-4">
                                         <span class="material-symbols-outlined md-36 md-grey me-2">explore</span>
-                                        <div>{{ activity.location }}</div>
+                                        <div>{{ activity.get_location_display }}</div>
                                     </div>
                                 </div>
 
@@ -113,16 +126,17 @@
                                     </div>
                                 </div>
 
-                                <div
-                                        class="mt-8 medium zero-point-eight-seven-five-root {{ activity.type.type }}-syntax-highlight px-3 py-4 text-center"
-                                    >{{ activity.type }}</div>
+                                    {#  todo: set url here based on the type of schedule that was set #}
+                                    <a href="{% url 'schedule:class-details' activity activity.id activity.slug %}"
+                                   class="mt-8 medium zero-point-eight-seven-five-root
+                                    {{ activity.schedule_type }}-syntax-highlight px-3 py-4 text-center"
+                                    >View {{ activity.get_schedule_type_display }}</a>
                             </div>
                         </div>
                     {% endfor %}
                 </section>
             </section>
         </main>
-    <script src="{% static "js/personal_schedule_view/personalScheduleButtonHandler.js" %}" defer></script>
     </div>
 
 {% endblock %}

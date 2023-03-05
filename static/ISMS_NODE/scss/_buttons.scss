@@ -57,6 +57,16 @@
     background-color: $alt-green-component-colour;
     color: $default-black;
   }
+
+    &:disabled{
+    opacity: 0.3;
+    &:hover{
+      background-color: transparent;
+      border: $alt-green-component-colour solid 0.0625rem;
+      border-radius: .3125rem;
+      color: $alt-green-component-colour;
+    }
+  }
 }
 
 

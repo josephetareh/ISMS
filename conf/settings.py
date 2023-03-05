@@ -39,7 +39,10 @@ INSTALLED_APPS = [
     'django_celery_beat',
     'user_configuration',
     'staff_schedule',
+    'frontdesk',
     'tasks',
+    'payments',
+    'executive',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +66,8 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR, 'user_configuration/templates/'),
             os.path.join(BASE_DIR, 'staff_schedule/templates/'),
+            os.path.join(BASE_DIR, 'frontdesk/templates/'),
+            os.path.join(BASE_DIR, 'executive/templates/'),
             os.path.join(BASE_DIR, 'templates/'),
         ],
         'APP_DIRS': True,

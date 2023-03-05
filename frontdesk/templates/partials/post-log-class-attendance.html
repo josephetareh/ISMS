@@ -1,0 +1,20 @@
+<form
+    id="unregistered-class-details-{{ unregistered_class.id }}"
+    class="d-flex flex-row col-5 align-items-center"
+    hx-boost="true"
+    action="{% url 'front-desk:log-classes' %}"
+    method="post"
+    hx-target="#unregistered-class-details-{{ unregistered_class.id }}"
+    hx-select="#unregistered-class-details-{{ unregistered_class.id }}"
+    hx-swap="outerHTML"
+    hx-vals='{"attendance-for": "{{ unregistered_class.id }}"}'
+>
+    <label for="unregistered-class-{{ unregistered_class.id }}" class="d-none"></label>
+    <div class="me-auto py-2 ps-3">{{ unregistered_class.attendees }}</div>
+    <button
+            id="invoice-addition-{{ unregistered_class.id }}"
+            class="btn-alt-ghost zero-point-eight-seven-five-root py-5 px-7 ms-4"
+            disabled
+    >Added to Payslip</button>
+</form>
+
