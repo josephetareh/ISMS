@@ -1,5 +1,3 @@
-
-
 .thin{
   font-weight: $outfit-thin;
 }
@@ -118,6 +116,15 @@
 
 .alternative-blue{
   color: $alternative-blue-color;
+}
+
+.core-blue{
+  color: $core-blue-colour;
+}
+
+.core-blue-disabled{
+  color: $core-blue-colour;
+  opacity: 0.3;
 }
 
 .pending-text{

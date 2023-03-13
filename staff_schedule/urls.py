@@ -6,7 +6,8 @@ app_name = "schedule"
 
 urlpatterns = [
     path("", views.personal_schedule, name="personal-schedule"),
-    path("clock-in", views.clock_in, name="clock-in"),
+    path("my-calendar/", views.my_calendar, name="my-calendar"),
+    path("clock-in/", views.clock_in, name="clock-in"),
     path("log-clock-in/<clock_in_id>/", views.log_clock_in, name="log-clock-in"),
     path('month-clock-ins/<month_query>/<year_query>/',
          views.clock_ins_for_current_month, name='month-clock-ins'),

@@ -18,6 +18,7 @@
 .material-symbols-outlined.md-red { color: $failure-text-colour; }
 .material-symbols-outlined.md-blue {color: $core-blue-colour; }
 .material-symbols-outlined.md-orange {color: $pending-text-colour; }
+.material-symbols-outlined.md-white{ color: $default-white }
 
 .material-symbols-outlined.bordered-red{
   background-color: #C43B46;
@@ -30,8 +31,30 @@
   transform: scaleX(-1)
 }
 
+.material-symbols-outlined.rotate-90-right{
+  transform: rotate(-90deg)
+}
+
 .material-symbols-outlined.themed-icon{
   @include theme using ($colors) {
     color: map-get($colors, primary);
+  }
+}
+
+.btn-alt-ghost{
+  &:disabled{
+    span.material-symbols-outlined.md-green{
+      color: $success-text-colour;
+    }
+    &:hover{
+      span.material-symbols-outlined.md-green{
+        color: $success-text-colour;
+      }
+    }
+  }
+  &:hover{
+    span.material-symbols-outlined.md-green{
+      color: $default-black;
+    }
   }
 }

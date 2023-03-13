@@ -133,3 +133,17 @@
   border: transparent;
 }
 
+
+.btn-close{
+  border-radius: 50%;
+  background: #C43B46 none;
+  opacity: 1;
+}
+
+.btn-fade-in {
+    animation: fadeIn 400ms ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+}

@@ -11,6 +11,7 @@ urlpatterns = [
     path('front-desk/', include('frontdesk.urls', namespace='front-desk')),
     path('executive/', include('executive.urls', namespace='executive')),
     path("payments/", include('payments.urls', namespace="payments")),
+    path("trainer/", include('trainer.urls', namespace="trainer")),
     path('__debug__/', include('debug_toolbar.urls')),
 ]
 

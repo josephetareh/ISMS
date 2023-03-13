@@ -1,0 +1,21 @@
+<div class="custom-pagination mt-10" id="paginationHelper">
+    <div class="d-flex flex-row justify-content-between align-items-center py-4">
+        <div class="ms-7 zero-point-eight-seven-five-root">Page {{ page_object.number }} of {{ page_object.paginator.num_pages }}</div>
+        <div class="me-7 core-blue" hx-boost="true" hx-select="{{ select_id }}" hx-target="{{ target_id }}" hx-swap="outerHTML" hx-push-url="true">
+            {% if page_object.has_previous %}
+                <a href="?page={{ page_object.previous_page_number }}" id="previous-button">
+                    <span class="material-symbols-outlined md-36">arrow_circle_left</span>
+                </a>
+            {% else %}
+                <span class="material-symbols-outlined md-36 core-blue-disabled">arrow_circle_left</span>
+            {% endif %}
+            {% if page_object.has_next %}
+                <a href="?page={{ page_object.next_page_number }}" id="next-button">
+                    <span class="material-symbols-outlined md-36">arrow_circle_right</span>
+                </a>
+            {% else %}
+                <span class="material-symbols-outlined md-36 core-blue-disabled">arrow_circle_right</span>
+            {% endif %}
+        </div>
+    </div>
+</div>

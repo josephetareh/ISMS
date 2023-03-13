@@ -40,3 +40,5 @@ function clockInDisputeSelectorHandling(){
 }
 clockInDisputeSelectorHandling();
 
+document.body.addEventListener("htmx:afterSettle", clockInDisputeSelectorHandling)
+

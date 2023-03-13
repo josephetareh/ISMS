@@ -6,4 +6,5 @@ app_name = "payments"
 
 urlpatterns = [
     path("my-earnings/", views.my_earnings, name="my-earnings"),
+    path("payslip-breakdown/<int:payslip_identification>/", views.payslip_breakdown, name="payslip-breakdown"),
 ]

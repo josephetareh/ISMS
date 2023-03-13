@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Payslip Breakdown{% endblock %}
+
+{% block content %}
+    <main id="user-content" class="mb-10">
+        <header id="payslip-breakdown"
+                 class="header-content pb-10 px-9 sub-page-divider">
+            <div class="d-flex flex-row pointer pt-10 pb-7 align-items-center"
+                 hx-post="{% url 'payments:my-earnings' %}" hx-select="#user-content"
+                 hx-target="#user-content" hx-swap="outerHTML" hx-push-url="true"
+                 id="back-button">
+                <span class="material-symbols-outlined md-24 md-grey">arrow_back</span>
+                <span class="subtext-shade regular zero-point-eight-seven-five-root">Back to  My Earnings</span>
+            </div>
+            <div class="double-root thin">Breakdown of PSL-{{ payslip.id }}</div>
+            <span class="mt-2 core-content-subheading">
+                Here is how the final payment for PSL-{{ payslip.id }} was calculated.
+            </span>
+
+            <section class="d-flex flex-row flex-wrap mt-7 justify-content-between">
+                <div class="d-flex flex-column transparent-board px-7 col-3 justify-content-between">
+                    <span class="material-symbols-outlined md-36 md-grey mt-9">account_balance</span>
+                    <div class="semi-bold one-point-one-two-five-root mt-4">Clock In Wage</div>
+                    <div class="triple-root semi-bold my-2">{{ payslip.total_clock_in_wage | intcomma }}</div>
+                    <div class="subtext-shade zero-point-eight-seven-five-root pb-7">Naira</div>
+                </div>
+
+                {% if is_trainer %}
+                    <div class="d-flex flex-column transparent-board px-7 col-3 justify-content-between">
+                        <span class="material-symbols-outlined md-36 md-grey mt-9">connect_without_contact</span>
+                        <div class="semi-bold one-point-one-two-five-root mt-4">Classes</div>
+                        <div class="triple-root semi-bold my-2">{{ payslip.total_class_payment | intcomma }}</div>
+                        <div class="subtext-shade zero-point-eight-seven-five-root pb-7">Naira</div>
+                    </div>
+
+                    <div class="d-flex flex-column transparent-board px-7 col-3 justify-content-between">
+                        <span class="material-symbols-outlined md-36 md-grey mt-9">home_pin</span>
+                        <div class="semi-bold one-point-one-two-five-root mt-4">Home Training</div>
+                        {# todo: home training #}
+                        <div class="triple-root semi-bold my-2">{{ payslip.total_class_payment | intcomma }}</div>
+                        <div class="subtext-shade zero-point-eight-seven-five-root pb-7">Naira</div>
+                    </div>
+                {% endif %}
+            </section>
+
+            <section class="d-flex flex-row flex-wrap mt-9 justify-content-between">
+                {% if payslip.deductions > 0.00 %}
+                    <div class="d-flex flex-column transparent-board px-7 col-3 justify-content-between failure-text">
+                        <span class="material-symbols-outlined md-36 md-grey mt-9 md-red">do_not_disturb_on</span>
+                        <div class="semi-bold one-point-one-two-five-root mt-7">Deductions</div>
+                        <div class="triple-root semi-bold mt-2 mb-4">{{ payslip.deductions | intcomma }}</div>
+                        <div class="zero-point-eight-seven-five-root mb-7">Naira</div>
+                        <div class="mb-10 failure-mini-board d-flex flex-row px-6 py-7 align-items-center">
+                            <span class="material-symbols-outlined md-36 md-red">offline_bolt</span>
+                            <div class="d-flex flex-column ms-4 me-auto">
+                                {# todo: name populate — change to ISMS name #}
+                                <div class="medium zero-point-eight-seven-five-root text-white">ISMS | Clock Ins</div>
+                                <div class="subtext-shade extra-light">ISMS.com</div>
+                            </div>
+                            <span class="material-symbols-outlined md-36 md-red">open_in_new</span>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="d-flex flex-column transparent-board px-7 col-3 justify-content-between success-text">
+                    <span class="material-symbols-outlined md-36 md-grey mt-9 md-green">add_circle</span>
+                    <div class="semi-bold one-point-one-two-five-root mt-7">Total Earned</div>
+                    <div class="triple-root semi-bold mt-2 mb-4">{{ payslip.final_payment | intcomma }}</div>
+                    <div class="zero-point-eight-seven-five-root mb-7">Naira</div>
+                    <div class="mb-10 success-mini-board d-flex flex-row px-6 py-7 align-items-center">
+                        <span class="material-symbols-outlined md-36 md-green">picture_as_pdf</span>
+                        <div class="d-flex flex-column ms-4 me-auto">
+                            {# todo: name populate — change to ISMS name #}
+                            <div class="medium zero-point-eight-seven-five-root text-white">PSL-{{ payslip.id }}</div>
+                            <div class="subtext-shade extra-light">{# todo: file and file size for payslip #}1MB</div>
+                        </div>
+                        <span class="material-symbols-outlined md-36 md-green">download</span>
+                    </div>
+                </div>
+
+            {% if payslip.deductions > 0.00 %}
+                {# false column placed here to ensure equal alignment #}
+                <div class="col-3"></div>
+            {% endif %}
+            </section>
+        </header>
+
+        {# todo: full implementation in the future — not urgent #}
+{#        {% if is_trainer %}#}
+{#            <section id="breakdown-of-payment" class="px-9 mt-10">#}
+{#                <div class="thin one-point-seven-five-root">Payslip Breakdown</div>#}
+{#                <span class="mt-2 core-content-subheading mt-2">#}
+{#                    Click on a board to see the breakdown for this payslip#}
+{#                </span>#}
+{##}
+{#                <div class="d-flex flex-row mt-10 justify-content-between">#}
+{#                    <div class="transparent-board px-7 col-3 pt-7">#}
+{#                        <span class="material-symbols-outlined md-36 md-grey">connect_without_contact</span>#}
+{#                        <div class="mb-6 mt-7 subtext-shade">View Breakdown For</div>#}
+{#                        <div class="medium triple-root mb-6">Classes</div>#}
+{#                        <span class="material-symbols-outlined md-48 md-blue mb-10">arrow_circle_right</span>#}
+{#                    </div>#}
+{##}
+                    {# todo: home training #}
+{#                    <div class="transparent-board px-7 col-3 pt-7">#}
+{#                        <span class="material-symbols-outlined md-36 md-grey">connect_without_contact</span>#}
+{#                        <div class="mb-6 mt-7 subtext-shade">View Breakdown For</div>#}
+{#                        <div class="medium triple-root mb-6">Home</div>#}
+{#                        <span class="material-symbols-outlined md-48 md-blue mb-10">arrow_circle_right</span>#}
+{#                    </div>#}
+{##}
+{#                    <div class="col-3"></div>#}
+{#                </div>#}
+{##}
+{#            </section>#}
+{#        {% endif %}#}
+    </main>
+{% endblock %}

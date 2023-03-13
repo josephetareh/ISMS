@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load humanize %}
 {% load static %}
 {% load staffschedule_extras %}
 
 {% block title %}All Clock Ins{% endblock %}
 
 {% block content %}
-    <div id="user-content">
+    <div id="user-content" class="mb-10">
         <div id="total-clock-ins">
             <section id="header-content"
                      class="header-content pb-10 px-9 sub-page-divider">
@@ -30,7 +31,7 @@
                         <div>Early Clock Ins</div>
                         <div class="quadruple-root medium">{{ early_clock_ins.count }}</div>
                         <div class="subtext-shade zero-point-seven-five-root">
-                            From {{ total_clock_ins.first.time_clocked_in | date:"dS F o"}} to {{ total_clock_ins.last.time_clocked_in | date:"dS F o" }}
+                            From {{ request.user.date_joined | date:"jS F o"}} to {% now "jS F o" %}
                         </div>
                     </div>
 
@@ -38,7 +39,7 @@
                         <div>Late Clock Ins</div>
                         <div class="quadruple-root medium">{{ late_clock_ins.count }}</div>
                         <div class="subtext-shade zero-point-seven-five-root">
-                            From {{ total_clock_ins.first.time_clocked_in | date:"dS F o"}} to {{ total_clock_ins.last.time_clocked_in | date:"dS F o" }}
+                            From {{ request.user.date_joined | date:"jS F o"}} to {% now "jS F o" %}
                         </div>
                     </div>
 
@@ -46,7 +47,7 @@
                         <div>All Clock Ins</div>
                         <div class="quadruple-root medium">{{ total_clock_ins.count }}</div>
                         <div class="subtext-shade zero-point-seven-five-root">
-                            From {{ total_clock_ins.first.time_clocked_in | date:"dS F o"}} to {{ total_clock_ins.last.time_clocked_in | date:"dS F o" }}
+                            From {{ request.user.date_joined | date:"jS F o"}} to {% now "jS F o" %}
                         </div>
                     </div>
                 </div>
@@ -79,55 +80,57 @@
 
                 </div>
 
-
-                <table class="table mt-9">
-                    <thead class="subpage-table">
-                        <tr>
-                            <th scope="col" class="py-4 ps-10"></th>
-                            <th scope="col" class="py-4">ID</th>
-                            <th scope="col" class="py-4 pe-14">Date</th>
-                            <th scope="col" class="py-4">Start</th>
-                            <th scope="col" class="py-4">Clocked</th>
-                            <th scope="col" class="py-4">Deduction</th>
-                            <th scope="col" class="py-4">Payment</th>
-                            <th scope="col" class="py-4">Status</th>
-                            <th scope="col" class="py-4"></th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for clock_in in total_clock_ins %}
-                            <tr class="sub-table-data clock-in-table">
-                                <td class="py-5 ps-10">
-                                    <label for="{{ clock_in.id }}"><span class="d-none">Select Clock In {{ clock_in.id }}</span></label>
-                                    <input
-                                            type="checkbox" class="form-check-input"
-                                            id="{{ clock_in.id }}" name="clock-in-{{ clock_in.id }}" value="{{ clock_in.id }}"
-                                            {% if clock_in.status != "LTE" %}
-                                                disabled
-                                            {% endif %}
-                                    />
-                                </td>
-                                <td class="py-5 table-non-core light">CID-{{ clock_in.id }}</td>
-                                <td class="py-5 table-non-core light">{{ clock_in.shift_starts | date:"dS M Y" }}</td>
-                                <td class="py-5 table-core">{{ clock_in.shift_starts | date:"H:i" }}</td>
-                                <td class="py-5 table-core">{{ clock_in.time_clocked_in | date:"H:i" }}</td>
-                                <td class="py-5 table-core">{{ clock_in.deduction }} NGN</td>
-                                <td class="py-5 table-core">{{ clock_in.payment_for_shift | subtract:clock_in.deduction  }} NGN</td>
-                                <td class="py-5 table-core">
-                                    <span class="d-none status-identifier">{{ clock_in.status }}</span>
-                                    <span class="material-symbols-outlined md-36 me-1 status-icon-indicator"></span>
-                                    <span class="status-text"></span>
-                                </td>
-                                <td class="py-5 alternative-blue medium table-core" hx-boost="true" hx-select="#user-content" hx-target="#user-content" hx-swap="outerHTML">
-                                    <a href="{% url 'schedule:clock-in-insights' clock_in.id %}">Insights
-                                    <span class="material-symbols-outlined md-36 ms-1">arrow_circle_right</span>
-                                    </a>
-                                </td>
+                <section id="user-table" class="d-flex flex-column align-items-center">
+                    <table class="table mt-9">
+                        <thead class="subpage-table">
+                            <tr>
+                                <th scope="col" class="py-4 ps-10"></th>
+                                <th scope="col" class="py-4">ID</th>
+                                <th scope="col" class="py-4 pe-14">Date</th>
+                                <th scope="col" class="py-4">Start</th>
+                                <th scope="col" class="py-4">Clocked</th>
+                                <th scope="col" class="py-4">Deduction</th>
+                                <th scope="col" class="py-4">Payment</th>
+                                <th scope="col" class="py-4">Status</th>
+                                <th scope="col" class="py-4"></th>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                        </thead>
+
+                        <tbody>
+                            {% for clock_in in page_object %}
+                                <tr class="sub-table-data clock-in-table">
+                                    <td class="py-5 ps-10">
+                                        <label for="{{ clock_in.id }}"><span class="d-none">Select Clock In {{ clock_in.id }}</span></label>
+                                        <input
+                                                type="checkbox" class="form-check-input"
+                                                id="{{ clock_in.id }}" name="clock-in-{{ clock_in.id }}" value="{{ clock_in.id }}"
+                                                {% if clock_in.status != "LTE" %}
+                                                    disabled
+                                                {% endif %}
+                                        />
+                                    </td>
+                                    <td class="py-5 table-non-core light">CID-{{ clock_in.id }}</td>
+                                    <td class="py-5 table-non-core light">{{ clock_in.shift_starts | date:"jS M Y" }}</td>
+                                    <td class="py-5 table-core">{{ clock_in.shift_starts | date:"H:i" }}</td>
+                                    <td class="py-5 table-core">{{ clock_in.time_clocked_in | date:"H:i" }}</td>
+                                    <td class="py-5 table-core">{{ clock_in.deduction | intcomma }} NGN</td>
+                                    <td class="py-5 table-core">{{ clock_in.payment_for_shift | subtract:clock_in.deduction | intcomma  }} NGN</td>
+                                    <td class="py-5 table-core">
+                                        <span class="d-none status-identifier">{{ clock_in.status }}</span>
+                                        <span class="material-symbols-outlined md-36 me-1 status-icon-indicator"></span>
+                                        <span class="status-text"></span>
+                                    </td>
+                                    <td class="py-5 alternative-blue medium table-core" hx-boost="true" hx-select="#user-content" hx-target="#user-content" hx-swap="outerHTML">
+                                        <a href="{% url 'schedule:clock-in-insights' clock_in.id %}">Insights
+                                        <span class="material-symbols-outlined md-36 ms-1">arrow_circle_right</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% include 'pagination.html' with select_id="#user-table" target_id="#user-table" %}
+                </section>
             </section>
         </div>
         <script src="{% static 'js/clock_ins_view/totalClockInsHandler.js' %}" defer></script>

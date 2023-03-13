@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}
+    My Clients
+{% endblock %}
+
+{% block content %}
+    <div id="user-content" class="mb-10">
+        <main id="my-clients">
+            <header id="header-content" class="mt-10 pb-7 px-9">
+                <div class="d-flex flex-row align-items-center">
+                    <h1 class="core-page-heading mb-0">My Clients</h1>
+                    <span class="material-symbols-outlined md-36 themed-icon ms-2">group</span>
+                </div>
+                <div class="mt-2 core-content-subheading">
+                    Your clients page details all the clients that you have ever had as an iSweat Trainer.
+                    Click on the more button to view all the sessions that you have ever had with them.
+                </div>
+                <div class="mt-9">
+                    <div class="input-group">
+                        <div class="custom-form-icon ps-7">
+                            <span class="material-symbols-outlined md-48 ms-2 py-6 md-grey">search</span>
+                        </div>
+                        <input type="text" class="py-6 form-control custom-form me-9" aria-label="search" aria-describedby="search-for-clients"
+                               placeholder="Start typing a name to filter through your clients ...">
+                    </div>
+                </div>
+            </header>
+
+            <section class="px-9">
+                <div class="d-flex flex-row flex-wrap justify-content-between">
+                    {% for client in page_object %}
+                        <div class="d-flex flex-column transparent-board col-3 pt-11 pb-10 ps-7 me-9 mt-7">
+                            {% if client.status == "ACT"%}
+                                <div class="success-text d-flex flex-row align-items-center">
+                                    <span class="material-symbols-outlined md-36 md-green pe-2">check_circle</span>
+                                    <div class="semi-bold zero-point-eight-seven-five-root">Active {{ client.get_relationship_level_display }} Client</div>
+                                </div>
+                            {% else %}
+                                <div class="failure-text d-flex flex-row align-items-center">
+                                    <span class="material-symbols-outlined md-36 md-red pe-2">cancel</span>
+                                    <div class="semi-bold zero-point-eight-seven-five-root">Inactive {{ client.get_relationship_level_display }} Client</div>
+                                </div>
+                            {% endif %}
+                            <div class="zero-point-eight-seven-five-root subtext-shade light mt-8">Since {{ client.date_joined | date:"d/m/Y" }}</div>
+                            <div class="mt-2 light one-point-one-two-five-root">{{ client.client.first_name }} {{ client.client.last_name }}</div>
+                            <div class="total-paid-to-trainer pt-6 double-root semi-bold">{{ client.total_paid | intcomma}} NGN</div>
+                            <div hx-boost="true" class="mt-8">
+                                <a href="">
+                                    <span class="material-symbols-outlined md-48 md-blue rotate-90-right">expand_circle_down</span>
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+{% endblock %}

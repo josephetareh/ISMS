@@ -9,7 +9,7 @@ class CustomUser(AbstractUser):
     username = models.CharField(max_length=128, unique=True)
     email = models.EmailField(unique=True)
     objects = CustomUserManager()
-    basic_hourly_wage = models.DecimalField(max_digits=10, decimal_places=2)
+    basic_hourly_wage = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     core_colour = models.CharField(max_length=7, default="#876AD7", blank=True, null=False)
     preferences = models.JSONField(null=True)
     payment_per_class = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)

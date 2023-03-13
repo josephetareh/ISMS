@@ -8,6 +8,18 @@
   border-radius: 1.25rem;
 }
 
+.failure-mini-board{
+  background-color: transparent;
+  border-radius: 0.3125rem;
+  border: 0.125rem solid $failure-text-colour;
+}
+
+.success-mini-board{
+  background-color: transparent;
+  border-radius: 0.3125rem;
+  border: 0.125rem solid $success-text-colour;
+}
+
 .mini-board{
   border-radius: 0.3125rem;
 }
@@ -82,4 +94,60 @@ a.MT-syntax-highlight{
   background-color: hsla(254, 91%, 56% , 0.1);
   color: #5B2AF5;
   border-radius: 4.25rem;
+}
+
+.custom-pagination{
+  background-color: $opaque-card-background-colour;
+  color: $default-white;
+  font-weight: 600;
+  width: 75%;
+  border-radius: 0.3125rem;
+}
+
+.custom-form{
+  background-color: $opaque-card-background-colour;
+  font-weight: $outfit-light;
+  border-color: transparent;
+  border-top-right-radius: 0.3125rem;
+  border-top-left-radius: 0.3125rem;
+  color: $default-white;
+
+  &::placeholder{
+    color: $core-subtext-colour;
+  }
+
+  &:focus{
+    color: $default-white;
+    background-color: $opaque-card-background-colour;
+    @include theme using ($colors) {
+      border-color: map-get($colors, primary);
+    }
+  }
+}
+
+.custom-form-icon{
+  background-color: $opaque-card-background-colour;
+  border-top-left-radius: 0.3125rem;
+  border-bottom-left-radius: 0.3125rem;
+}
+
+
+.modal{
+  border-color: transparent;
+}
+
+.modal-header{
+  background-color: #03060D;
+  color: $core-blue-colour;
+  border: none;
+}
+
+.modal-body{
+  background-color: $opaque-card-background-colour;
+}
+
+.modal-footer{
+  background-color: $opaque-card-background-colour;
+  border: none;
+  justify-content: flex-start;
 }

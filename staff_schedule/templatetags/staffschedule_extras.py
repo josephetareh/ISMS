@@ -44,6 +44,15 @@ def has_group(user, group_name):
     return user.groups.filter(name=group_name).exists()
 
 
+@register.filter(name="previous_day")
+def previous_day(date):
+    return date - timedelta(days=1)
+
+
+@register.filter(name="next_day")
+def next_day(date):
+    return date + timedelta(days=1)
+
 # @register.filter(name='get_group')
 # def user_group(user):
 #     if user.groups:

@@ -5,7 +5,7 @@
 {% block content %}
     <div id="user-content" class="mb-10">
         <main id="my-earnings">
-            <section class="sub-page-divider px-9 pb-10">
+            <section class="sub-page-divider pb-10 px-9">
                 <header class="d-flex flex-column pe-7 mt-10">
 
                     <div class="d-flex flex-row align-items-center">
@@ -20,19 +20,60 @@
                         <div class="success-text">
                             <div>Total Payslips</div>
                             <div class="quadruple-root medium">{{ total_payslips_count }}</div>
-                            <div class="subtext-shade zero-point-seven-five-root">From {{ first_payment.payment_confirmed | date:"jS, F o" }}
-                                to {{ last_payment.payment_confirmed | date:"jS, F o" }}</div>
+                            <div class="subtext-shade zero-point-seven-five-root">
+                                From {{ request.user.date_joined | date:"jS F o"}} to {% now "jS F o" %}
+                            </div>
                         </div>
 
                         <div class="success-text">
                             <div>Total Payment</div>
                             <div class="quadruple-root medium">{{ total_payment | intcomma }} NGN</div>
-                            <div class="subtext-shade zero-point-seven-five-root">From {{ first_payment.payment_confirmed | date:"jS, F o" }}
-                                to {{ last_payment.payment_confirmed | date:"jS, F o" }}</div>
+                            <div class="subtext-shade zero-point-seven-five-root">
+                                From {{ request.user.date_joined | date:"jS F o"}} to {% now "jS F o" %}
+                        </div>
                         </div>
                     </div>
 
                 </header>
+            </section>
+
+            <section class="px-9">
+                <div class="mt-10 d-flex flex-row justify-content-between align-items-center">
+                    <div class="double-root thin">Earnings History</div>
+                </div>
+
+                <section class="d-flex flex-column align-items-center" id="user-table">
+                    <table class="table mt-9">
+                        <thead class="subpage-table">
+                            <tr>
+                                <th scope="col" class="py-4 ps-10">ID</th>
+                                <th scope="col" class="py-4 pe-14">Date Paid</th>
+                                <th scope="col" class="py-4">Type</th>
+                                <th scope="col" class="py-4">Total Paid</th>
+                                <th scope="col" class="py-4"></th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {% for earning in page_object %}
+                                <tr class="sub-table-data clock-in-table">
+                                    <td class="py-5 table-non-core light ps-10">PSL-{{ earning.id }}</td>
+                                    <td class="py-5 table-non-core light">{{ earning.payment_confirmed | date:"jS M Y" }}</td>
+                                    <td class="py-5 table-core">{{ earning.get_payslip_type_display }}</td>
+                                    <td class="py-5 table-core success-text semi-bold">{{ earning.final_payment | intcomma }} NGN</td>
+                                    <td class="py-5 alternative-blue medium table-core" hx-boost="true" hx-select="#user-content"
+                                        hx-target="#user-content" hx-swap="outerHTML">
+                                        <a href="{% url 'payments:payslip-breakdown' earning.id %}">
+                                        <span class="material-symbols-outlined md-36 ms-1">arrow_circle_right</span>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% include 'pagination.html' with select_id="#user-table" target_id="#user-table" %}
+                </section>
+
             </section>
         </main>
     </div>

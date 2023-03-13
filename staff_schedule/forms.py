@@ -1,7 +1,8 @@
 from django import forms
-from django.forms import ModelForm, BaseModelFormSet, TextInput, Textarea, ClearableFileInput
+from django.forms import ModelForm, BaseModelFormSet, TextInput, Textarea, ClearableFileInput, NumberInput
 
 from staff_schedule.models import Dispute, DisputeAttachment
+from trainer.models import SessionExerciseItem
 
 
 class DisputeFormSet(BaseModelFormSet):
@@ -28,10 +29,9 @@ class MyClearableFileInput(ClearableFileInput):
 
 
 class DisputeAttachmentForm(ModelForm):
-
     class Meta:
         model = DisputeAttachment
-        fields = ("document", )
+        fields = ("document",)
 
         widgets = {
             "document": ClearableFileInput(
@@ -41,3 +41,35 @@ class DisputeAttachmentForm(ModelForm):
                 }
             )
         }
+
+
+class AddExerciseForm(ModelForm):
+
+    class Meta:
+        model = SessionExerciseItem
+        fields = ("exercise_name", "sets", "reps")
+
+        widgets = {
+            "exercise_name": TextInput(
+                attrs={
+                    "class": "text-form py-4 px-7 col-6"
+                }
+            ),
+            "sets": NumberInput(
+                attrs={
+                    "class": "py-4 px-7"
+                }
+            ),
+            "reps": NumberInput(
+                attrs={
+                    "class": "py-4 px-7"
+                }
+            ),
+        }
+
+        labels = {
+            "exercise_name": "Exercise Name"
+        }
+
+
+

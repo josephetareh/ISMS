@@ -3,40 +3,14 @@ from datetime import timedelta
 from decimal import Decimal
 
 from django.conf import settings
-from django.db import models
+from django.core.exceptions import ValidationError
+from django.db import models, IntegrityError
 from django.db.models import Q
 from django.utils import timezone
 from django_celery_beat.models import CrontabSchedule, PeriodicTask
 
 from payments.models import PaySlip
-
-
-class Location(models.Model):
-    # todo: on final version — reflect locations
-    LOCATIONS = [
-        ("OF", "Office"),
-        ("MTA", "Multi-Tasking Area"),
-        ("SA", "Strength Area"),
-        ("ISMS", "ISMS Platform"),
-        ("CA", "Class Area")
-    ]
-    location_name = models.CharField(max_length=4, choices=LOCATIONS)
-
-    def __str__(self):
-        return self.get_location_name_display()
-
-
-class EventType(models.Model):
-    EVENT_TYPES = [
-        ("CS", "Classes"),
-        ("MT", "Meeting"),
-        ("PT", "Personal Training")
-    ]
-    # todo: before migration — probably want to change this name to prevent python clash errors
-    type = models.CharField(max_length=2, choices=EVENT_TYPES)
-
-    def __str__(self):
-        return self.get_type_display()
+from trainer.models import Client, TrainerSession, GroupClass, SessionExerciseItem
 
 
 class Weekday(models.Model):
@@ -55,70 +29,6 @@ class Weekday(models.Model):
         return self.get_day_display()
 
 
-class Event(models.Model):
-    event_name = models.CharField(max_length=300, blank=False)
-    description = models.TextField(max_length=1000, blank=True, null=True)
-    type = models.ForeignKey(EventType, on_delete=models.CASCADE)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
-    location = models.ForeignKey(Location, on_delete=models.SET_NULL, null=True)
-    staff_working = models.ManyToManyField(settings.AUTH_USER_MODEL, through="EventPersonnel",
-                                           through_fields=('event', 'staff_on_event'))
-    event_day = models.ForeignKey(Weekday, null=False, on_delete=models.CASCADE)
-    slug = models.SlugField(max_length=12, blank=True, null=True)
-
-    # positive integer field here to show how many times the event will be recurring for.
-    # another field to say that the recurring of the event is true
-
-    # covering = models.BooleanField(default=False)
-
-    def __str__(self):
-        return self.event_name
-
-    def save(self, *args, **kwargs):
-        if not self.id:
-            super().save(*args, **kwargs)
-        self.slug = f"{self.type.type}-ID-{self.location.location_name}-{self.id}"
-        super().save(*args, **kwargs)
-
-
-class EventPersonnel(models.Model):
-    event = models.ForeignKey(Event, on_delete=models.CASCADE)
-    staff_on_event = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    covering_for = models.ForeignKey(settings.AUTH_USER_MODEL, null=True, blank=True, on_delete=models.CASCADE,
-                                     related_name="staff_covering_for")
-    covering = models.BooleanField(default=False)
-    covering_duration = models.PositiveIntegerField(null=True, blank=True)
-
-    def __str__(self):
-        string_representation = "{} for {}"
-        return string_representation.format(self.event, self.staff_on_event)
-
-
-class GroupClass(models.Model):
-    class_name = models.CharField(max_length=100, blank=False)
-    description = models.TextField(max_length=1000, blank=True)
-    trainer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-                                limit_choices_to={
-                                    "groups__name": "Trainer"
-                                })
-
-    def __str__(self):
-        return self.class_name
-
-
-class GroupClassPayment(models.Model):
-    payment_for_class = models.ForeignKey(GroupClass, on_delete=models.SET_NULL, null=True, blank=True)
-    attendees = models.PositiveIntegerField(default=0, blank=True, null=True)
-    attendance_logged = models.BooleanField(default=False)
-    payment_request_created = models.DateTimeField(auto_now_add=True)
-    time_of_payment = models.DateTimeField(null=True, blank=True)
-    class_paid_for = models.BooleanField(default=False)
-    total_payment = models.DecimalField(default=0.00, max_digits=10, decimal_places=2)
-    sent_for_payment = models.BooleanField(default=False)
-    payslip = models.ForeignKey(PaySlip, null=True, blank=True, on_delete=models.SET_NULL)
-
-
 class Meeting(models.Model):
     meeting_title = models.CharField(max_length=100, blank=False)
     description = models.TextField(max_length=3000, blank=False)
@@ -128,7 +38,7 @@ class Meeting(models.Model):
         return self.meeting_title
 
 
-class ISMSSchedule(models.Model):
+class ISMSScheduleFixedEvent(models.Model):
     RECURRING_CHOICES = [
         ("DLY", "Daily"),
         ("WKLY", "Weekly"),
@@ -137,7 +47,6 @@ class ISMSSchedule(models.Model):
     EVENT_TYPES = [
         ("CS", "Class"),
         ("MT", "Meeting"),
-        ("PT", "Personal Training Session")
     ]
     WEEKDAYS = [
         ("0", "Monday"),
@@ -156,18 +65,20 @@ class ISMSSchedule(models.Model):
         ("CA", "Class Area")
     ]
     schedule_type = models.CharField(choices=EVENT_TYPES, max_length=2)
-    schedule_day = models.CharField(choices=WEEKDAYS, max_length=1)
+    schedule_day = models.CharField(choices=WEEKDAYS, max_length=1, blank=True)
     group_class = models.ForeignKey(GroupClass, on_delete=models.CASCADE, null=True, blank=True)
     staff_meeting = models.ForeignKey(Meeting, on_delete=models.CASCADE, null=True, blank=True)
     location = models.CharField(choices=LOCATIONS, max_length=4)
     slug = models.SlugField(max_length=20, blank=True, null=True, unique=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    recurring = models.BooleanField(default=False)
-    recurring_interval = models.CharField(
-        choices=RECURRING_CHOICES, max_length=4
-    )
-    recurring_count = models.PositiveIntegerField(default=0, blank=True, null=True)
+
+    # # todo: implementing this functionality
+    # recurring = models.BooleanField(default=False)
+    # recurring_interval = models.CharField(
+    #     choices=RECURRING_CHOICES, max_length=4
+    # )
+    # recurring_count = models.PositiveIntegerField(default=0, blank=True, null=True)
 
     def __str__(self):
         if self.group_class:
@@ -176,27 +87,94 @@ class ISMSSchedule(models.Model):
             return str(self.staff_meeting)
         else:
             return super().__str__()
-            # return super(ISMSSchedule, self).__str__()
+
+    def clean(self):
+        if self.staff_meeting and self.group_class:
+            raise ValidationError("You May Only Select One Type of Event for a Fixed Schedule Item")
+        if self.start_time.weekday() != self.end_time.weekday():
+            raise ValidationError("ISMS Fixed Events May Only Occur on a Single Date. "
+                                  "Please Ensure that Both the Start and End Time are On The Same Date")
 
     def save(self, *args, **kwargs):
+        self.schedule_day = str(self.start_time.weekday())
         if self.pk is None:
             super().save(*args, **kwargs)
-        # set the event type dynamically
+
         if self.group_class:
             self.schedule_type = "CS"
         elif self.staff_meeting:
             self.schedule_type = "MT"
 
         self.slug = f"{self.schedule_type}-ID-{self.location}-{self.id}"
-
-        # todo: recurring functionality
-
-        # todo: validation rules:
-        #   — ensure that self.group_class and self.staff_meeting cannot be together
-        #   — ensure that the start_date and end_date are always the same date and it matches the weekday choice
-        #   — if the recurring interval has been set, then you must not be able to set a recurring schedule.
-        #   they are not compatible
         super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "ISMS Schedule Fixed Event"
+
+
+# class CalendarEvent(models.Model):
+#     start_time = models.DateTimeField()
+#     end_time = models.DateTimeField()
+
+
+class ISMSScheduleCalendarEvent(models.Model):
+    CALENDAR_EVENT_SCHEDULE_TYPES = [
+        ("MT", "Meeting"),
+        ("SPE", "Special Event"),
+        ("PT", "Personal Training"),
+        ("CS", "Class")
+    ]
+    schedule_type = models.CharField(choices=CALENDAR_EVENT_SCHEDULE_TYPES, max_length=3)
+    personal_training_event = models.ManyToManyField(TrainerSession, blank=True, through='TrainingSessionInfo')
+    # todo: add class here — this will be used in cases where a trainer is covering for a class.
+    meeting_event = models.ForeignKey(Meeting, on_delete=models.CASCADE, null=True, blank=True)
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    slug = models.SlugField(max_length=400, blank=True)
+    started = models.BooleanField(default=False)
+    ended = models.BooleanField(default=False)
+
+
+    def clean(self):
+        # if self.pk:
+        #     # todo: move this functionality to view on creation
+        #     if self.personal_training_event and self.meeting_event:
+        #         raise ValidationError("You May Only Select One Type of Event for a Calendar Event")
+        if self.start_date.weekday() != self.end_date.weekday():
+            raise ValidationError("ISMS Calendar Events May Only Occur Over the Course of a Single Day")
+
+    def save(self, *args, **kwargs):
+        if self.pk is None:
+            # each time that a PT sessions is added to the calendar, it must be reduced by one:
+            # todo: each time that a PT session is deleted from the calendar, one should be added to it
+            super().save(*args, **kwargs)
+            # test this:
+            # todo: this functionality will have to be moved to the view / form:
+            if self.personal_training_event:
+                for event in self.personal_training_event.all():
+                    try:
+                        event.sessions_left -= 1
+                        if event.sessions_left == 0:
+                            raise ValidationError(f"No More Sessions Can Be Allocated For {event}")
+                        event.save()
+                    except IntegrityError:
+                        raise ValidationError(f"No More Sessions Can Be Allocated For {event}")
+
+        if not self.slug:
+            self.slug = f"ISMS-Calendar-Event-{self.id}-{self.schedule_type}"
+        super().save(*args, **kwargs)
+
+    class Meta:
+        verbose_name = "ISMS Schedule Calendar Event"
+
+
+class TrainingSessionInfo(models.Model):
+    personal_training_event = models.ForeignKey(TrainerSession, on_delete=models.CASCADE)
+    calendar_event = models.ForeignKey(ISMSScheduleCalendarEvent, on_delete=models.CASCADE)
+    session_started = models.BooleanField(default=False)
+    session_start_time = models.DateTimeField(null=True, blank=True)
+    session_end_time = models.DateTimeField(null=True, blank=True)
+    exercises_performed = models.ManyToManyField(SessionExerciseItem)
 
 
 class Shift(models.Model):

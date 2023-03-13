@@ -1,6 +1,5 @@
 function manipulateStatus(){
     const status = document.getElementsByClassName("clock-in-table");
-    console.log("hello")
     for (const element of status){
         const statusIdentifier = element.getElementsByClassName('status-identifier')[0];
         const statusIcon = element.getElementsByClassName('status-icon-indicator')[0];
@@ -26,7 +25,6 @@ function manipulateStatus(){
                 statusText.classList.add("pending-text");
                 break;
         }
-        console.log(statusIdentifier)
     }
 }
 
@@ -36,6 +34,9 @@ document.getElementById('user-content').addEventListener('htmx:afterRequest', fu
     if(document.getElementById("clock-ins-this-month")){
         manipulateStatus();
     }
-})
+});
+
+document.body.addEventListener("htmx:afterSettle", manipulateStatus)
+
 
 

@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load staffschedule_extras %}
+{% block title %}
+    My Calendar
+{% endblock %}
+
+{% block content %}
+    <div id="user-content" class="mb-10">
+        <main id="staff-calendar">
+            <header class="sub-page-divider pb-10 px-9">
+
+                <section class="d-flex flex-column pe-7 mt-10">
+                    <div class="d-flex flex-row align-items-center">
+                        <h1 class="core-page-heading mb-0">My Calendar</h1>
+                        <span class="material-symbols-outlined md-36 themed-icon ms-2">event</span>
+                    </div>
+                    <div class="mt-2 core-content-subheading">
+                        Your calendar is the one-stop-shop for all events that occur in the upcoming month, including personal training sessions for our trainers.
+                    </div>
+
+                    <section class="mt-10 d-flex flex-row justify-content-between" id="date-details">
+                        <div class="alt-fnt alt-fnt-extra-light triple-root">{{ date_viewing.0 | date:"F Y" }} | W{{ date_viewing.1 }}</div>
+                        <div class="d-flex align-items-center">
+                            <button class="material-symbols-outlined md-48 md-blue button icon-flip pointer">next_plan</button>
+                            <button class="material-symbols-outlined md-48 md-blue button pointer">next_plan</button>
+                        </div>
+                    </section>
+                </section>
+            </header>
+
+            <section class="px-9 mt-10" id="calendar-date-information">
+                <div class="d-flex flex-row semi-bold triple-root justify-content-between">
+                    {% with previous_date=date_viewing.0|previous_day %}
+                        <div
+                                class="subtext-shade pointer"
+                                hx-get="{% url 'schedule:my-calendar' %}"
+                                hx-push-url="true"
+                                hx-vals='{"day": "{{ previous_date | date:"j" }}", "month": "{{ previous_date | date:"n"}}", "year":"{{ previous_date | date:"Y" }}"}'
+                                hx-swap="multi:#calendar-date-information,#date-details:outerHTML"
+                        >{{ previous_date | date:"d" }}</div>
+                    {% endwith %}
+                    <div class="text-white">{{ date_viewing.0 | date:"d" }}</div>
+                    {% with next_date=date_viewing.0|next_day %}
+                        <div
+                                class="subtext-shade pointer"
+                                hx-get="{% url 'schedule:my-calendar' %}"
+                                hx-push-url="true"
+                                hx-vals='{"day": "{{ next_date | date:"j" }}", "month": "{{ next_date | date:"n"}}", "year":"{{ next_date | date:"Y" }}"}'
+                                hx-swap="multi:#calendar-date-information,#date-details:outerHTML"
+                        >
+                            {{ next_date | date:"d" }}
+                        </div>
+                    {% endwith %}
+
+                </div>
+
+                <div class="d-flex flex-column">
+                    {% for event in calendar_events %}
+                        <div class="d-flex flex-row mt-10 align-items-center">
+                            <div class="{{ event.schedule_type }}-syntax-highlight py-14 px-3 semi-bold zero-point-eight-seven-five-root"
+                                 style="writing-mode: vertical-rl;">
+                                {{ event.schedule_type }}</div>
+                            <div class="d-flex flex-column ms-9 align-items-start">
+                                <div class="double-root medium">{{ event.start_date | date:"H:i" }} - {{ event.end_date | date:"H:i" }}</div>
+
+                                {% if event.schedule_type ==  "PT" %}
+                                    <div class="mt-4 subtext-shade">
+                                    Group Session With {% for pt_session in event.personal_training_event.all %}{% if forloop.counter0 >= 1 %}, {% if forloop.last %}and {% endif %}{% endif %}{{ pt_session.client }}{% endfor %}
+                                    </div>
+                                    <button
+                                            type="button"
+                                            class="material-symbols-outlined md-48 md-blue button pt-4 ps-0"
+                                            hx-post="{% url 'trainer:my-sessions' event.id event.slug %}"
+                                            hx-select="#user-content"
+                                            hx-target="#user-content"
+                                            hx-swap="outerHTML"
+                                            hx-push-url="true"
+                                    >arrow_circle_right
+                                    </button>
+                                {% elif event.schedule_type == "MT" %}
+                                    <div class="mt-4 subtext-shade">
+                                        {{ event.meeting_event.meeting_title }}
+                                    </div>
+                                    <button
+                                            type="button"
+                                            class="material-symbols-outlined md-48 md-blue button pt-4 ps-0"
+                                    >arrow_circle_right
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </section>
+        </main>
+    </div>
+{% endblock %}

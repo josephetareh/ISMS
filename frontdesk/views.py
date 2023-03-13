@@ -11,8 +11,8 @@ from django.utils import timezone
 
 from conf import constants
 from conf.url_tests import not_a_trainer_test, frontdesk_test
-from payments.models import PaySlip
-from staff_schedule.models import GroupClass, GroupClassPayment, ClockIn
+from payments.models import PaySlip, GroupClassPayment
+from staff_schedule.models import ClockIn
 
 
 @login_required()
@@ -107,6 +107,7 @@ def create_payslip(request):
             if payslip_added_to.final_payment == 0:
                 payslip_added_to.delete()
             else:
+                payslip_added_to.payslip_type = "GNL"
                 payslip_added_to.staff = staff
                 payslip_added_to.save()
 

@@ -11,3 +11,14 @@
     }
   }
 }
+
+.form-select{
+  background-color: transparent;
+  color: $default-white;
+  border: 0.125rem solid $opaque-card-background-colour;
+  &:focus-visible{
+    @include theme using ($colors) {
+      outline: 0.125rem solid map-get($colors, primary);
+    }
+  }
+}

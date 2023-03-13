@@ -11,13 +11,17 @@ from django.db.models import Count, Q
 from django.forms import modelform_factory, modelformset_factory
 from django.http import Http404
 from django.shortcuts import render, get_object_or_404, redirect
+from django.urls import reverse
 from django.utils import timezone
 from environ import environ
 from haversine import haversine, Unit
 
+from conf.helper_functions import paginator_helper
 from conf.url_tests import not_a_trainer_test, trainer_test
+from payments.models import GroupClassPayment
 from staff_schedule.forms import DisputeForm, DisputeAttachmentForm
-from staff_schedule.models import Event, Shift, ClockIn, Dispute, DisputeAttachment, ISMSSchedule, GroupClassPayment
+from staff_schedule.models import Shift, ClockIn, Dispute, DisputeAttachment, ISMSScheduleFixedEvent, \
+    ISMSScheduleCalendarEvent
 
 env = environ.Env()
 
@@ -34,13 +38,13 @@ def personal_schedule(request):
         context['schedule_weekday_string'] = calendar.day_name[context['schedule_weekday']]
 
         if activity_type is None or activity_type == "ALL":
-            activities = ISMSSchedule.objects.filter(
+            activities = ISMSScheduleFixedEvent.objects.filter(
                 Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
                 schedule_day=schedule_weekday,
             ).select_related('staff_meeting', 'group_class').order_by("start_time")
             activity_type = "ALL"
         else:
-            activities = ISMSSchedule.objects.filter(
+            activities = ISMSScheduleFixedEvent.objects.filter(
                 Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
                 schedule_day=schedule_weekday, schedule_type=activity_type
             ).select_related('staff_meeting', 'group_class').order_by("start_time")
@@ -48,7 +52,7 @@ def personal_schedule(request):
         context['activities'] = activities
     else:
         schedule_weekday = timezone.now().weekday()
-        activities = ISMSSchedule.objects.filter(
+        activities = ISMSScheduleFixedEvent.objects.filter(
             Q(group_class__trainer=request.user) | Q(staff_meeting__staff_attending=request.user),
             schedule_day=schedule_weekday,
         ).select_related('staff_meeting', 'group_class').order_by("start_time")
@@ -64,7 +68,6 @@ def personal_schedule(request):
     context['deque_of_days'] = date_shifter
     context['previous_day'] = date_shifter[6]
     context['next_day'] = date_shifter[1]
-    print(activities)
     return render(request, "personal-schedule.html", context)
 
 
@@ -104,7 +107,7 @@ def class_details(request, class_name, class_identification, slug):
     while this is not necessarily a fool-proof implementation, I believe it is much better than the infinite amount of
     database rows that would have to be created for each single class that is had on the gym. so, it is a positive tradeoff
     """
-    class_viewing = ISMSSchedule.objects.get(
+    class_viewing = ISMSScheduleFixedEvent.objects.get(
         slug=slug,
         id=int(class_identification),
         group_class__trainer=request.user
@@ -153,6 +156,32 @@ def class_details(request, class_name, class_identification, slug):
     context['class_details'] = class_viewing
     context['can_end_class'] = can_end_class
     return render(request, "class-details.html", context)
+
+
+@login_required()
+def my_calendar(request):
+    context = {}
+    if not request.GET:
+        current_day = timezone.now()
+        list_of_events = ISMSScheduleCalendarEvent.objects.filter(
+            Q(meeting_event__staff_attending=request.user) | Q(personal_training_event__trainer=request.user),
+            start_date__day=current_day.day
+        ).distinct().order_by("start_date").prefetch_related("personal_training_event__client")
+
+        context['calendar_events'] = list_of_events
+        context['date_viewing'] = current_day, current_day.strftime("%V")
+    else:
+        day, month, year = int(request.GET.get("day")), int(request.GET.get("month")), int(request.GET.get("year"))
+        list_of_events = ISMSScheduleCalendarEvent.objects.filter(
+            Q(meeting_event__staff_attending=request.user) | Q(personal_training_event__trainer=request.user),
+            start_date__day=day,
+            start_date__month=month,
+            start_date__year=year,
+        ).distinct().order_by("start_date").prefetch_related("personal_training_event__client")
+        context['calendar_events'] = list_of_events
+        new_date = timezone.now().replace(year=year, month=month, day=day)
+        context['date_viewing'] = new_date, new_date.strftime("%V")
+    return render(request, "my-calendar.html", context)
 
 
 @login_required()
@@ -320,6 +349,7 @@ def clock_ins_for_current_month(request, month_query, year_query):
         next_button_status = ""
 
     all_clock_ins_count = month_clock_ins.count()
+    page_object = paginator_helper(request, month_clock_ins, 10)
 
     context = {
         "month_clock_ins": month_clock_ins,
@@ -333,7 +363,8 @@ def clock_ins_for_current_month(request, month_query, year_query):
         "previous_year_query": previous_year,
         "next_month_query": next_month,
         "next_year_query": next_year,
-        "next_button_disabled": next_button_status
+        "next_button_disabled": next_button_status,
+        "page_object": page_object
     }
     return render(request, "clock-ins-this-month.html", context)
 
@@ -343,10 +374,11 @@ def total_clock_ins(request):
     all_clock_ins = ClockIn.objects.filter(shift__staff_on_shift=request.user, time_clocked_in__isnull=False)
     early_clock_ins = all_clock_ins.filter(status="EA")
     late_clock_ins = all_clock_ins.filter(status="LTE")
+    page_object = paginator_helper(request, all_clock_ins, 1)
     context = {
-        "total_clock_ins": all_clock_ins,
+        "page_object": page_object,
         "early_clock_ins": early_clock_ins,
-        "late_clock_ins": late_clock_ins
+        "late_clock_ins": late_clock_ins,
     }
     return render(request, "total-clock-ins.html", context)
 

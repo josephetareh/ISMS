@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'tasks',
     'payments',
     'executive',
+    'trainer',
 ]
 
 MIDDLEWARE = [
@@ -68,6 +69,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR, 'staff_schedule/templates/'),
             os.path.join(BASE_DIR, 'frontdesk/templates/'),
             os.path.join(BASE_DIR, 'executive/templates/'),
+            os.path.join(BASE_DIR, "trainer/templates"),
             os.path.join(BASE_DIR, 'templates/'),
         ],
         'APP_DIRS': True,
